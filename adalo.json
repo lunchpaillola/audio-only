@@ -1,0 +1,14 @@
+{
+  "author": "Lunch Pail Labs",
+  "description": "Quickly and reliably add audio chats to your Adalo apps",
+  "logo": "./example-logo.png",
+  "displayName": "Audio Only by LPL",
+  "components": [
+    {
+      "name": "AudioOnlybyLunchPail",
+      "manifest": "./src/components/AudioOnlybyLunchPail/manifest.json"
+    }
+  ],
+  "webpackConfig": "./webpack.config.js"
+
+}

@@ -1,0 +1,36 @@
+{
+  "displayName": "audioOnlybyLunchPail",
+  "defaultWidth": 600,
+  "defaultHeight": 750,
+  "component": "./index.js",
+  "resizeY": true,
+  "resizeX": true,
+  "components": "./index.js",
+  "icon": "./example-thumbnail.png",
+  "props": [
+    {
+      "name": "apiKey",
+      "displayName": "apiKey",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "name": "url",
+      "displayName": "url",
+      "type": "text",
+      "default": ""
+    },
+    {
+      "name": "moderator",
+      "displayName": "moderator",
+      "type": "boolean",
+      "default": "false"
+    },
+    {
+      "name": "userName",
+      "displayName": "username",
+      "type": "text",
+      "default": ""
+    }
+  ]
+}
