@@ -21,8 +21,8 @@
       "default": ""
     },
     {
-      "name": "moderator",
-      "displayName": "moderator",
+      "name": "owner",
+      "displayName": "owner",
       "type": "boolean",
       "default": "false"
     },

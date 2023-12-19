@@ -3,11 +3,11 @@ import React, { useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useCallState } from "../../contexts/ReactCallProvider";
 import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
-import useClickAway from "../useClickAway";
+import useClickAway from "./useClickAway";
 import Menu from "./Menu";
-import MoreIcon from "./MoreIcon";
-import MicIcon from "./MicIcon";
-import MutedIcon from "./MutedIcon";
+import MoreIcon from "../icons/MoreIcon";
+import MicIcon from "../icons/MicIcon";
+import MutedIcon from "../icons/MutedIcon";
 
 
 const AVATAR_DIMENSION = 80;
@@ -39,7 +39,6 @@ const Participant = ({ participant, local, modCount }) => {
   const { ref, isVisible, setIsVisible } = useClickAway(false);
 
   const name = displayName(participant?.user_name);
-
   const menuOptions = useMemo(() => {
     const mutedText = participant?.audio ? "Mute" : "Unmute";
 

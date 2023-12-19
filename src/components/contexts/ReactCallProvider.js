@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable react/prop-types */
-import React,{
+import React, {
   useCallback,
   useEffect,
   useState,
@@ -21,7 +21,13 @@ const MSG_MAKE_SPEAKER = "make-speaker";
 const MSG_MAKE_LISTENER = "make-listener";
 const FORCE_EJECT = "force-eject";
 
-export const CallProvider = ({ children, participantName, url, moderator, apikey }) => {
+export const CallProvider = ({
+  children,
+  participantName,
+  url,
+  owner,
+  apikey,
+}) => {
   const [view, setView] = useState(PREJOIN); // pre-join | in-call
   const [callFrame, setCallFrame] = useState(null);
   const [participants, setParticipants] = useState([]);
@@ -32,109 +38,132 @@ export const CallProvider = ({ children, participantName, url, moderator, apikey
   const [updateParticipants, setUpdateParticipants] = useState(null);
 
   const endpointurl = "https://api.daily.co/v1/";
-	const urlObject = new URL(url);
-const room_name = urlObject.pathname.split('/').filter(part => part !== '').pop();
+  const urlObject = new URL(url);
+  const room_name = urlObject.pathname
+    .split("/")
+    .filter((part) => part !== "")
+    .pop();
 
-//action for creating a meeting token
-const createToken = async () => {
-  console.log('just before createToken', room_name, moderator, participantName);
-  try {
-    const response = await fetch(endpointurl + "meeting-tokens", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + apikey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        properties: {
-          room_name: room_name,
-          is_owner: moderator,
-          user_name: participantName,
+  //action for creating a meeting token
+  const createToken = async () => {
+    console.log("creating meeting token");
+    try {
+      const response = await fetch(endpointurl + "meeting-tokens", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apikey,
+          "Content-Type": "application/json",
         },
-      }),
-    });
-
-    const result = await response.json();
-    const token = result.token;
-
-    return token;
-  } catch (error) {
-    console.error("Error:", error);
-    // You may choose to return something here, like null, if you want to handle this case
-    // return null;
-    throw error; // or re-throw the error if you want the calling function to handle it
-  }
-};
-
-
-  const joinRoom = useCallback(
-    async () => {
-      if (callFrame) {
-        callFrame.leave();
-      }
-
-
-      
-
-      const call = Daily.createCallObject({
-        audioSource: true, // start with audio on to get mic permission from user at start
-        videoSource: false,
-        dailyConfig: {
-          experimentalChromeVideoMuteLightOff: true,
-        },
+        body: JSON.stringify({
+          properties: {
+            room_name: room_name,
+            is_owner: true,
+          },
+        }),
       });
 
-  
+      const result = await response.json();
+      const token = result.token;
+      console.log("token", token);
 
-      function handleJoinedMeeting(evt) {
-        console.log('joined_meeting')
-        setUpdateParticipants(
-          `joined-${evt?.participant?.user_id}-${Date.now()}`
-        );
-        setView(INCALL);
-        console.log("[JOINED MEETING]", evt?.participant);
-      }
+      return token;
+    } catch (error) {
+      console.error("Error:", error);
+      // You may choose to return something here, like null, if you want to handle this case
+      // return null;
+      throw error; // or re-throw the error if you want the calling function to handle it
+    }
+  };
 
-      call.on("joined-meeting", handleJoinedMeeting);
-      let token;
-      token = await createToken();
-      await call
-        .join({url:url, token:token})
-        .then(() => {
-          setError(false);
-          setCallFrame(call);
-          console.log('seoncdtoken', token);
-          /**
-           * Now mute, so everyone joining is muted by default.
-           *
-           * IMPROVEMENT: track a speaker's muted state so if they
-           * are rejoining as a moderator, they don't have to turn
-           * their mic back on.
-           */
-          call.setLocalAudio(false);
-        })
-        .catch((err) => {
-          if (err) {
-            setError(err);
-          }
-        });
-      /**
-       * IMPROVEMENT: Every room should have a moderator. We should
-       * prevent people from joining (or kick them out after joining)
-       * if a mod isn't present. Since these demo rooms only last ten
-       * minutes we're not currently checking this.
-       */
+  const joinRoom = useCallback(async () => {
+    //formatting the username
+    let userName;
+    let newToken;
+    let moderator;
+    console.log("owner", owner);
+    if (moderator || owner) {
+      userName = `${participantName?.trim()}_${MOD}`;
+      newToken = await createToken();
+      console.log("newToken", newToken);
+    } else {
+      userName = `${participantName?.trim()}_${LISTENER}`;
+    }
 
-      return () => {
-        call.off("joined-meeting", handleJoinedMeeting);
-      };
-    },
-    [callFrame]
-  );
+    if (callFrame) {
+      callFrame.leave();
+    }
+
+    let roomInfo = { room_name };
+
+    const call = Daily.createCallObject({
+      audioSource: true, // start with audio on to get mic permission from user at start
+      videoSource: false,
+      dailyConfig: {
+        experimentalChromeVideoMuteLightOff: true,
+      },
+    });
+
+    function handleJoinedMeeting(evt) {
+      console.log("joined_meeting");
+      setUpdateParticipants(
+        `joined-${evt?.participant?.user_id}-${Date.now()}`
+      );
+      setView(INCALL);
+      console.log("[JOINED MEETING]", evt?.participant);
+    }
+
+    call.on("joined-meeting", handleJoinedMeeting);
+
+    console.log("url", url, options);
+    const options = {
+      url: url,
+      userName,
+    };
+    if (roomInfo.token) {
+      options.token = roomInfo?.token;
+    }
+    if (newToken) {
+      options.token = newToken;
+    }
+
+    console.log("url", url, options);
+    await call
+      .join(options)
+      .then(() => {
+        setError(false);
+        setCallFrame(call);
+        /**
+         * Now mute, so everyone joining is muted by default.
+         *
+         * IMPROVEMENT: track a speaker's muted state so if they
+         * are rejoining as a moderator, they don't have to turn
+         * their mic back on.
+         */
+        call.setLocalAudio(false);
+      })
+      .catch((err) => {
+        if (err) {
+          setError(err);
+        }
+      });
+    /**
+     * IMPROVEMENT: Every room should have a moderator. We should
+     * prevent people from joining (or kick them out after joining)
+     * if a mod isn't present. Since these demo rooms only last ten
+     * minutes we're not currently checking this.
+     */
+
+    return () => {
+      call.off("joined-meeting", handleJoinedMeeting);
+    };
+  }, [callFrame]);
+
 
   const handleParticipantJoinedOrUpdated = useCallback((evt) => {
     setUpdateParticipants(`updated-${evt?.participant?.user_id}-${Date.now()}`);
+
+  
     console.log("[PARTICIPANT JOINED/UPDATED]", evt.participant);
   }, []);
 
@@ -280,13 +309,20 @@ const createToken = async () => {
 
   const changeAccountType = useCallback(
     (participant, accountType) => {
-      if (!participant || ![MOD, SPEAKER, LISTENER].includes(accountType))
+      let userName;
+      if (!participant || ![MOD, SPEAKER, LISTENER].includes(accountType)){
         return;
+      }
+
+    
+      userName = displayName(participant?.user_name) + `_${accountType}`;
+  
+
+        console.log('the participants', participant, accountType)
       /**
        * In case someone snuck in through a direct link, give their username
        * the correct formatting
        */
-      let userName;
       if (
         ![MOD, SPEAKER, LISTENER].includes(
           getAccountType(participant?.user_name)
@@ -308,7 +344,7 @@ const createToken = async () => {
             ? MSG_MAKE_SPEAKER
             : MSG_MAKE_LISTENER;
 
-      console.log("[UPDATING PARTICIPANT]");
+      console.log("[UPDATING PARTICIPANT]", userName);
       if (msg === MSG_MAKE_LISTENER) {
         handleMute(participant);
       }

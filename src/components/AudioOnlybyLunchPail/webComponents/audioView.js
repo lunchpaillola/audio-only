@@ -12,8 +12,8 @@ import {
 import Participant from "./Participant";
 import styled from "styled-components";
 import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
-import MicIcon from "./MicIcon";
-import MutedIcon from "./MutedIcon";
+import MicIcon from "../icons/MicIcon";
+import MutedIcon from "../icons/MutedIcon";
 import theme from "../theme";
 import Audio from "./Audio";
 import EditorView from "../editor";
@@ -44,19 +44,44 @@ const AudioView = ({ _height, editor }) => {
     return <EditorView _height={_height}></EditorView>;
   }
 
+	
+
   //Join room when theview is PreJOin
   useEffect(() => {
-    //joinRoom()
     if (!editor && view === PREJOIN) {
       joinRoom();
     }
   }, []);
 
   useEffect(() => {
-    console.log("participantsand view", participants, view);
   }, [view, participants]);
 
   //InCallview
+		const ghostParticipants = useMemo(() => {
+			// Filter out participants who are not speakers, listeners, or moderators
+			const ghostParticipantsList = participants
+					?.filter((p) => {
+							const accountType = getAccountType(p?.user_name);
+							return accountType !== SPEAKER && accountType !== LISTENER && accountType !== MOD;
+					});
+	
+			// Render the filtered participants
+			return (
+					<ListeningContainer> {/* Use an appropriate container for ghost participants */}
+							{ghostParticipantsList?.map((p) => (
+									<Participant
+											participant={p}
+											key={`listener-${p.user_id}`}
+											local={local}
+											modCount={mods?.length}
+									/>
+							))}
+					</ListeningContainer>
+			);
+	}, [participants, getAccountType, local, mods]);
+	
+
+
   const local = useMemo(
     (p) => participants?.filter((p) => p?.local)[0],
     [participants]
@@ -75,6 +100,7 @@ const AudioView = ({ _height, editor }) => {
     [participants, getAccountType]
   );
   const listeners = useMemo(() => {
+
     const l = participants
       ?.filter((p) => getAccountType(p?.user_name) === LISTENER)
       .sort((a, _) => {
@@ -122,6 +148,7 @@ const AudioView = ({ _height, editor }) => {
     [lowerHand, raiseHand, local]
   );
 
+
   return (
     <>
       {editor ? (
@@ -147,6 +174,7 @@ const AudioView = ({ _height, editor }) => {
               >
                 {canSpeak}
                 {listeners}
+																{ghostParticipants}
               </View>
               {/*Tray content*/}
               <View
@@ -251,18 +279,14 @@ AudioView.propTypes = {
 };
 
 const Container = styled.div`
-  margin: 48px 0 0;
   visibility: ${(props) => (props.hidden ? "hidden" : "visible")};
   height: ${(props) => (props.hidden ? "0" : "100%")};
 `;
 const CanSpeakContainer = styled.div`
-  border-bottom: ${theme.colors.grey} 1px solid;
-  margin-bottom: 24px;
   display: flex;
   flex-wrap: wrap;
 `;
 const ListeningContainer = styled.div`
-  margin-top: 24px;
   display: flex;
   flex-wrap: wrap;
 `;

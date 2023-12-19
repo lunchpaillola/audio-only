@@ -5,11 +5,11 @@ import AudioView from "./webComponents/audioView";
 
 
 const AudioOnlybyLunchPail = (props) => {
-	const {editor, _height, url, apiKey,moderator, userName} = props
+	const {editor, _height, url, apiKey, owner, userName} = props
 	//const { joinRoom } = useCallState();
 
 			return (
-				<CallProvider participantName={userName} url={url} moderator={moderator} apikey={apiKey}>
+				<CallProvider participantName={userName} url={url} owner={owner} apikey={apiKey}>
 					<AudioView _height={_height} editor={editor}></AudioView>
 					</CallProvider>
 			);
@@ -19,7 +19,7 @@ const AudioOnlybyLunchPail = (props) => {
 			editor: PropTypes.bool,
 			userName: PropTypes.string,
 			apiKey: PropTypes.string,
-			moderator: PropTypes.bool,
+			owner: PropTypes.bool,
 			url: PropTypes.string,
 			_height: PropTypes.number,
 			
