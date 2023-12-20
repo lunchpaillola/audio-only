@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-console */
 /* eslint-disable react/prop-types */
 import React, { useEffect, useMemo, useCallback } from "react";
 import { Text, View, TouchableOpacity } from "react-native";
@@ -17,34 +15,25 @@ import MutedIcon from "../icons/MutedIcon";
 import theme from "../theme";
 import Audio from "./Audio";
 import EditorView from "../editor";
-import { Spinner } from "flowbite-react";
+import { ActivityIndicator } from "react-native";
 
 const AudioView = ({ _height, editor }) => {
   const {
     getAccountType,
-    changeAccountType,
     handleMute,
     handleUnmute,
-    displayName,
     joinRoom,
     leaveCall,
     endCall,
-    removeFromCall,
     raiseHand,
     lowerHand,
-    activeSpeakerId,
-    error,
     participants,
-    room,
-    roomExp,
     view,
   } = useCallState();
 
   if (editor) {
     return <EditorView _height={_height}></EditorView>;
   }
-
-	
 
   //Join room when theview is PreJOin
   useEffect(() => {
@@ -53,37 +42,59 @@ const AudioView = ({ _height, editor }) => {
     }
   }, []);
 
-  useEffect(() => {
-  }, [view, participants]);
+  useEffect(() => {console.log('changing all Particpants', allParticipants)}, [allParticipants]);
+
+  const getParticipantKey = (participant) => {
+    const accountType = getAccountType(participant?.user_name);
+    console.log('accountType billie', accountType);
+    if (accountType === MOD) {
+      return `speaking-${participant.user_id}`;
+    } else if (accountType === SPEAKER) {
+      return `speaking-${participant.user_id}`;
+    } else {
+      return `listening-${participant.user_id}`; // For any participant that is not a mod, speaker, or listener
+    }
+  };
 
   //InCallview
-		const ghostParticipants = useMemo(() => {
-			// Filter out participants who are not speakers, listeners, or moderators
-			const ghostParticipantsList = participants
-					?.filter((p) => {
-							const accountType = getAccountType(p?.user_name);
-							return accountType !== SPEAKER && accountType !== LISTENER && accountType !== MOD;
-					});
-	
-			// Render the filtered participants
-			return (
-					<ListeningContainer> {/* Use an appropriate container for ghost participants */}
-							{ghostParticipantsList?.map((p) => (
-									<Participant
-											participant={p}
-											key={`listener-${p.user_id}`}
-											local={local}
-											modCount={mods?.length}
-									/>
-							))}
-					</ListeningContainer>
-			);
-	}, [participants, getAccountType, local, mods]);
-	
+  const ghostParticipants = useMemo(() => {
+    // Filter out participants who are not speakers, listeners, or moderators
+    const ghostParticipantsList = participants?.filter((p) => {
+      const accountType = getAccountType(p?.user_name);
+      return (
+        accountType !== SPEAKER &&
+        accountType !== LISTENER &&
+        accountType !== MOD
+      );
+    });
 
+    // Render the filtered participants
+    return (
+      <ListeningContainer>
+        {" "}
+        {/* Use an appropriate container for ghost participants */}
+        {ghostParticipantsList?.map((p) => (
+          <Participant
+            participant={p}
+            key={`listener-${p.user_id}`}
+            local={local}
+            modCount={mods?.length}
+          />
+        ))}
+      </ListeningContainer>
+    );
+  }, [participants, getAccountType, local, mods]);
+
+  const ghostParticipants2 = useMemo(() => 
+  participants?.filter(p => {
+    const accountType = getAccountType(p?.user_name);
+    return accountType !== SPEAKER && accountType !== LISTENER && accountType !== MOD;
+  }),
+  [participants, getAccountType]
+);
 
   const local = useMemo(
-    (p) => participants?.filter((p) => p?.local)[0],
+    () => participants?.filter((p) => p?.local)[0],
     [participants]
   );
 
@@ -95,12 +106,41 @@ const AudioView = ({ _height, editor }) => {
     [participants, getAccountType]
   );
   const speakers = useMemo(
-    (p) =>
+    () =>
       participants?.filter((p) => getAccountType(p?.user_name) === SPEAKER),
     [participants, getAccountType]
   );
-  const listeners = useMemo(() => {
 
+  const listeners2 = useMemo(() => participants
+  ?.filter((p) => getAccountType(p?.user_name) === LISTENER)
+  .sort((a, b) => {
+    // Move raised hands to the front of the list
+    return a?.user_name.includes("✋") ? -1 : b?.user_name.includes("✋") ? 1 : 0;
+  }),
+  [participants, getAccountType]
+);
+
+
+
+const listeners = useMemo(() => {
+  const l = [...listeners2, ...ghostParticipants2];
+  return (
+    <ListeningContainer>
+      {l?.map((p) => (
+        <Participant
+          participant={p}
+          key={`listening-${p.user_id}`}
+          local={local}
+          modCount={mods?.length}
+        />
+      ))}
+    </ListeningContainer>
+  );
+}, [participants, getAccountType, local, mods]);
+
+
+
+  /*const listeners = useMemo(() => {
     const l = participants
       ?.filter((p) => getAccountType(p?.user_name) === LISTENER)
       .sort((a, _) => {
@@ -120,13 +160,13 @@ const AudioView = ({ _height, editor }) => {
         ))}
       </ListeningContainer>
     );
-  }, [participants, getAccountType, local, mods]);
+  }, [participants, getAccountType, local, mods]);*/
 
   const canSpeak = useMemo(() => {
     const s = [...mods, ...speakers];
     return (
       <CanSpeakContainer>
-        {s?.map((p, i) => (
+        {s?.map((p) => (
           <Participant
             participant={p}
             key={`speaking-${p.user_id}`}
@@ -138,6 +178,26 @@ const AudioView = ({ _height, editor }) => {
     );
   }, [mods, speakers, local]);
 
+  const allParticipants = useMemo(() => {
+    const s = [...mods, ...speakers, ...listeners2, ...ghostParticipants2]
+    console.log('runninallPrticipants',s);
+    return (
+      <CombinedContainer>
+        {s?.map((p) => (
+          <Participant
+            participant={p}
+            key={getParticipantKey(p)}
+            local={local}
+            modCount={mods?.length}
+          />
+        ))}
+      </CombinedContainer>
+    );
+  }, [mods, speakers,listeners2, ghostParticipants2, local, getAccountType]);
+
+
+
+
   const handleAudioChange = useCallback(
     () => (local?.audio ? handleMute(local) : handleUnmute(local)),
     [handleMute, handleUnmute, local]
@@ -148,13 +208,20 @@ const AudioView = ({ _height, editor }) => {
     [lowerHand, raiseHand, local]
   );
 
-
   return (
     <>
       {editor ? (
         <EditorView _height={_height}></EditorView>
       ) : view !== INCALL ? (
-        <Spinner />
+        <View
+          style={{
+            height: _height,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color="#ffff" />
+        </View>
       ) : (
         <>
           <Container hidden={view !== INCALL}>
@@ -172,9 +239,7 @@ const AudioView = ({ _height, editor }) => {
                   height: _height - 60,
                 }}
               >
-                {canSpeak}
-                {listeners}
-																{ghostParticipants}
+                {allParticipants}
               </View>
               {/*Tray content*/}
               <View
@@ -205,16 +270,23 @@ const AudioView = ({ _height, editor }) => {
                     {[MOD, SPEAKER].includes(
                       getAccountType(local?.user_name)
                     ) ? (
-                      <AudioButton onClick={handleAudioChange}>
-                        {local?.audio ? (
-                          <MicIcon type="simple" />
-                        ) : (
-                          <MutedIcon type="simple" />
-                        )}
-                        <ButtonText>
-                          {local?.audio ? "Mute" : "Unmute"}
-                        </ButtonText>
-                      </AudioButton>
+                      <>
+                        <View
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <AudioButton onPress={handleAudioChange}>
+                            {local?.audio ? <MicIcon /> : <MutedIcon />}
+                          </AudioButton>
+                          <ButtonCaptionText>
+                            {local?.audio ? "Mute" : "Unmute"}
+                          </ButtonCaptionText>
+                        </View>
+                      </>
                     ) : (
                       <HandButton onClick={handleHandRaising}>
                         <ButtonText>
@@ -226,42 +298,15 @@ const AudioView = ({ _height, editor }) => {
                     )}
                     {mods?.length < 2 &&
                     getAccountType(local?.user_name) === MOD ? (
-                      <LeaveButton onClick={endCall}>End call</LeaveButton>
+                      <LeaveButton onPress={endCall} title="End Call">
+                        End call
+                      </LeaveButton>
                     ) : (
-                      <LeaveButton onClick={leaveCall}>Leave call</LeaveButton>
+                      <LeaveButton onPress={leaveCall} title="Leave call">
+                        Leave call
+                      </LeaveButton>
                     )}
                   </TrayContent>
-                  <View
-                    style={{
-                      backgroundColor: "#333",
-                      paddingHorizontal: 24,
-                      paddingVertical: 24,
-                      borderRadius: 9999,
-                    }}
-                  ></View>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor: "#FF0000", // Button background color
-                      paddingHorizontal: 24, // Horizontal padding
-                      paddingVertical: 8, // Vertical padding
-                      borderRadius: 9999, // Fully rounded corners
-                      alignItems: "center", // Center children horizontally
-                      justifyContent: "center", // Center children vertically
-                    }}
-                    onPress={() => {
-                      // Handle button press
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontWeight: "bold",
-                        color: "white", // Text color, not fontColor
-                        fontSize: 16,
-                      }}
-                    >
-                      Leave
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -290,34 +335,23 @@ const ListeningContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
 `;
-const Header = styled.h2`
-  font-size: ${theme.fontSize.large};
-  color: ${theme.colors.greyDark};
+
+const CombinedContainer = styled.div`
+  display: flex;
+  flex-direction: row; 
+  flex-wrap: wrap;
+  gap: 32px; 
 `;
-const CallHeader = styled.div`
+
+const TrayContent = styled.div`
+  padding: 8px;
+  width: 100vw;
+  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 24px;
 `;
-const Tray = styled.div`
-  display: flex;
-  justify-content: center;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 52px;
-  width: 100vw;
-  box-sizing: border-box;
-  background-color: ${theme.colors.greyLight};
-  padding: 12px;
-`;
-const TrayContent = styled.div`
-  max-width: 700px;
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-`;
+
 const Button = styled.button`
   font-size: ${theme.fontSize.large};
   font-weight: 600;
@@ -330,19 +364,71 @@ const Button = styled.button`
     background-color: ${theme.colors.greyLightest};
   }
 `;
-const LeaveButton = styled(Button)`
-  margin-left: auto;
-`;
+const LeaveButton = ({ onPress, title }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{
+      backgroundColor: "#FF0000",
+      paddingHorizontal: 24,
+      width: 150,
+      height: 44,
+      marginTop: 10,
+      marginBottom:10,
+      margin: 8,
+      paddingVertical: 8,
+      borderRadius: 9999,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: "auto",
+    }}
+  >
+    <Text
+      style={{
+        fontWeight: "bold",
+        color: "white", // Text color
+        fontSize: 16,
+      }}
+    >
+      {title}
+    </Text>
+  </TouchableOpacity>
+);
 const HandButton = styled(Button)`
   margin-right: auto;
+  &:hover {
+    background-color: transparent;
+  }
 `;
-const AudioButton = styled(Button)`
-  margin-right: auto;
-  display: flex;
-  align-items: center;
-`;
+const AudioButton = ({ onPress, children }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{
+      backgroundColor: "#333",
+      paddingHorizontal: 8,
+      paddingVertical: 8,
+      width: 44,
+      height: 44,
+      borderRadius: 9999,
+      flexDirection: "vertical",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    {children}
+  </TouchableOpacity>
+);
+
 const ButtonText = styled.span`
   margin-left: 4px;
+  font-size: 16px;
+  color: white;
 `;
 
+const ButtonCaptionText = styled.span`
+  color: white;
+  font-size: 16px;
+  margin-top: 4px;
+  width: 60px;
+  text-align: center;
+`;
 export default AudioView;

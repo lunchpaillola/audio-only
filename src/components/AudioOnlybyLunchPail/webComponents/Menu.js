@@ -25,22 +25,26 @@ const Menu = ({ options, setIsVisible }) => {
 const Container = styled.ul`
   display: flex;
   flex-direction: column;
-  background-color: ${theme.colors.white};
+  background-color: #1F2D3D ;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.04), 0px 0px 4px rgba(0, 0, 0, 0.08);
   margin: 0;
   padding: 8px 0;
+  width: 128px;
+  height: 104px;
 `;
 const Option = styled.li`
   list-style: none;
-  font-size: ${theme.fontSize.base};
+  font-size: 12px;
+  text-align: center;
   color: ${(props) =>
-    props.warning ? theme.colors.redDark : theme.colors.blueDark};
-  background-color: ${theme.colors.white};
+    props.warning ? theme.colors.redDark : theme.colors.white};
   line-height: 16px;
   padding: 8px;
 
   &:hover {
     background-color: ${theme.colors.greyLight};
+    color: ${(props) =>
+    props.warning ? theme.colors.redDark : "#1F2D3D"};
     cursor: pointer;
   }
 `;

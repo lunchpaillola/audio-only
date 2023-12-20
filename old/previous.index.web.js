@@ -321,7 +321,7 @@ const room_name = urlObject.pathname.split('/').filter(part => part !== '').pop(
 			apikey: PropTypes.string,
 			moderator: PropTypes.bool,
 			url: PropTypes.string,
-			_height: AudioOnlybyLunchPail.number,
+			_height: PropTypes.number,
 			
 	};
 

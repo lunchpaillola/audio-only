@@ -9,9 +9,8 @@ import MoreIcon from "../icons/MoreIcon";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
 
-
-const AVATAR_DIMENSION = 80;
-const ADMIN_BADGE = "⭐ ";
+const AVATAR_DIMENSION = 72;
+const ADMIN_BADGE = "";
 
 const initials = (name) =>
   name
@@ -38,8 +37,21 @@ const Participant = ({ participant, local, modCount }) => {
   const audioRef = useRef(null);
   const { ref, isVisible, setIsVisible } = useClickAway(false);
 
+
   const name = displayName(participant?.user_name);
-  const menuOptions = useMemo(() => {
+  //Translating the role for the user to the
+  const role =
+    getAccountType(participant?.user_name) === MOD
+      ? "Host"
+      : getAccountType(participant?.user_name) === SPEAKER
+        ? "Speaker"
+        : getAccountType(participant?.user_name) === LISTENER
+          ? "Listener"
+          : "Listener";
+  
+          console.log('role', role);
+
+    const menuOptions = useMemo(() => {
     const mutedText = participant?.audio ? "Mute" : "Unmute";
 
     const audioAction = participant?.audio
@@ -65,6 +77,7 @@ const Participant = ({ participant, local, modCount }) => {
       participant?.local &&
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
+      console.log('am i getting vloser')
       options.push({
         text: mutedText,
         action: () => audioAction(participant),
@@ -83,6 +96,7 @@ const Participant = ({ participant, local, modCount }) => {
       getAccountType(local?.user_name) === MOD &&
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
+      console.log('am i getting closerrr')
       options.push({
         text: "Mute",
         action: () => handleMute(participant),
@@ -149,13 +163,16 @@ const Participant = ({ participant, local, modCount }) => {
      * be the last items
      */
     if (participant?.local) {
+      console.log("reach here?");
       const lastMod =
         modCount < 2 && getAccountType(participant?.user_name) === MOD;
+        console.log("reachhere?", lastMod);
       options.push({
         text: lastMod ? "End call" : "Leave call",
         action: () => (lastMod ? endCall() : leaveCall(participant)),
         warning: true,
       });
+      console.log("reaaach here?", lastMod);
     }
 
     return options;
@@ -235,6 +252,8 @@ const Participant = ({ participant, local, modCount }) => {
     [getAccountType, local, participant]
   );
 
+  console.log('do we get')
+
   return (
     <Container>
       <Avatar
@@ -247,6 +266,7 @@ const Participant = ({ participant, local, modCount }) => {
         </AvatarText>
       </Avatar>
       <Name>{name}</Name>
+      <Role>{role}</Role>
       {getAccountType(participant?.user_name) !== LISTENER && (
         <AudioIcon>
           {participant?.audio ? <MicIcon /> : <MutedIcon />}
@@ -263,11 +283,7 @@ const Participant = ({ participant, local, modCount }) => {
         </MenuContainer>
       )}
       {participant?.audioTrack && (
-        <audio
-          autoPlay
-          id={`audio-${participant.user_id}`}
-          ref={audioRef}
-        />
+        <audio autoPlay id={`audio-${participant.user_id}`} ref={audioRef} />
       )}
     </Container>
   );
@@ -282,50 +298,75 @@ const Container = styled.div`
   max-width: 104px;
 `;
 const Avatar = styled.div`
-  width: 64;
-  height: 64;
-  border-radius: 24px;
-  background-color: #2B3E56;
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  background-color: #2b3e56;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid
-    ${(props) => (props.isActive ? "green" : "transparent")};
+  border: 2px solid ${(props) => (props.isActive ? "green" : "transparent")};
 `;
 const AvatarText = styled.p`
-  font-size: 24;
-  color: #FFF;
+  font-size: 16px;
+  color: #fff;
 `;
 const Name = styled.p`
-  color: #FFF;
-  margin: 8px 0;
-  font-weight: 400;
-  font-size: 12;
-  padding-left: 4px;
-  max-width: 80px;
+  color: #fff;
+  margin: 4px 0px;
+  font-weight: 400px;
+  padding-top: 8px;
+  font-size: 12px;
+  width: 72px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 20px;
+  text-align: center;
+  line-height: 12px;
+`;
+const Role = styled.p`
+  color: #c8d1dc;
+  margin: 4px 0px;
+  font-weight: 400px;
+  font-size: 12px;
+  width: 72px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  line-height: 12px;
 `;
 const AudioIcon = styled.div`
   position: absolute;
+  background-color: #1f2d3d;
+  width: 32px;
+  height: 32px;
   top: ${AVATAR_DIMENSION - 28}px;
   left: -4px;
+  padding-top: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
 `;
 const MenuButton = styled.button`
   border: none;
-  background-color: transparent;
+  background-color: #1f2d3d;
+  width: 32px;
+  height: 32px;
   position: absolute;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
   top: ${AVATAR_DIMENSION - 28}px;
   right: -4px;
-  padding: 0;
+  padding: 0px;
   cursor: pointer;
 `;
 const MenuContainer = styled.div`
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: -64px;
+  right: -96px;
   z-index: 10;
 `;
 

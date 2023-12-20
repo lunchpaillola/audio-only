@@ -6,7 +6,6 @@ import AudioView from "./webComponents/audioView";
 
 const AudioOnlybyLunchPail = (props) => {
 	const {editor, _height, url, apiKey, owner, userName} = props
-	//const { joinRoom } = useCallState();
 
 			return (
 				<CallProvider participantName={userName} url={url} owner={owner} apikey={apiKey}>

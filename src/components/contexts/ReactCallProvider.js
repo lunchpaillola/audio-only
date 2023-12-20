@@ -44,9 +44,9 @@ export const CallProvider = ({
     .filter((part) => part !== "")
     .pop();
 
+    console.log(url);
   //action for creating a meeting token
   const createToken = async () => {
-    console.log("creating meeting token");
     try {
       const response = await fetch(endpointurl + "meeting-tokens", {
         method: "POST",
@@ -65,7 +65,6 @@ export const CallProvider = ({
 
       const result = await response.json();
       const token = result.token;
-      console.log("token", token);
 
       return token;
     } catch (error) {
@@ -81,11 +80,9 @@ export const CallProvider = ({
     let userName;
     let newToken;
     let moderator;
-    console.log("owner", owner);
     if (moderator || owner) {
       userName = `${participantName?.trim()}_${MOD}`;
       newToken = await createToken();
-      console.log("newToken", newToken);
     } else {
       userName = `${participantName?.trim()}_${LISTENER}`;
     }
@@ -105,12 +102,11 @@ export const CallProvider = ({
     });
 
     function handleJoinedMeeting(evt) {
-      console.log("joined_meeting");
       setUpdateParticipants(
-        `joined-${evt?.participant?.user_id}-${Date.now()}`
+        `joined-${evt?.participants?.local?.user_id}-${Date.now()}`
       );
       setView(INCALL);
-      console.log("[JOINED MEETING]", evt?.participant);
+      console.log("[JOINED MEETING]", evt?.participants?.local?.user_id);
     }
 
     call.on("joined-meeting", handleJoinedMeeting);
@@ -161,6 +157,7 @@ export const CallProvider = ({
 
 
   const handleParticipantJoinedOrUpdated = useCallback((evt) => {
+    console.log('participant joined or updated', evt)
     setUpdateParticipants(`updated-${evt?.participant?.user_id}-${Date.now()}`);
 
   
@@ -168,6 +165,7 @@ export const CallProvider = ({
   }, []);
 
   const handleParticipantLeft = useCallback((evt) => {
+    console.log('handleLeft', evt)
     setUpdateParticipants(`left-${evt?.participant?.user_id}-${Date.now()}`);
     console.log("[PARTICIPANT LEFT]", evt);
   }, []);
@@ -194,6 +192,7 @@ export const CallProvider = ({
   }, []);
 
   const getAccountType = useCallback((username) => {
+    console.log('userName, getAccountType', username)
     if (!username) return;
     // check last three letters to compare to account type constants
     return username.slice(-3);
@@ -206,6 +205,7 @@ export const CallProvider = ({
     }
     leave();
     setView(PREJOIN);
+    console.log('setting view Prejoin')
   }, [callFrame]);
 
   const removeFromCall = useCallback(
@@ -220,17 +220,19 @@ export const CallProvider = ({
       setUpdateParticipants(
         `eject-participant-${participant?.user_id}-${Date.now()}`
       );
+      console.log("ejecting", updateParticipants);
     },
     [callFrame]
   );
 
   const endCall = useCallback(() => {
-    console.log("[ENDING CALL]");
+    console.log("[ENDING CALL]", participants);
     participants.forEach((p) => removeFromCall(p));
     leaveCall();
   }, [participants, removeFromCall, leaveCall]);
 
   const displayName = useCallback((username) => {
+    console.log('userName, display', username)
     if (!username) return;
     // return name without account type
     return username.slice(0, username.length - 4);
@@ -445,6 +447,7 @@ export const CallProvider = ({
     if (updateParticipants) {
       console.log("[UPDATING PARTICIPANT LIST]");
       const list = Object.values(callFrame?.participants() || {});
+      console.log("list", list);
       setParticipants(list);
     }
   }, [updateParticipants, callFrame]);
