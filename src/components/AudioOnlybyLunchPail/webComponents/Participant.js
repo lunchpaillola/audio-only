@@ -230,13 +230,14 @@ const Participant = ({ participant, local, modCount }) => {
     // be able to hear any other users until they mute/unmute their mics.
     // To fix that, we call `play` on each audio track on all devicechange events.
 
-    if (!audioRef.current) {
-      return false;
-    }
-
     const startPlayingTrack = () => {
-      audioRef.current?.play();
+      if (audioRef.current) {
+        audioRef.current.play().catch(error => {
+          console.error("Error trying to play audio:", error);
+        });
+    }
     };
+  
     navigator.mediaDevices.addEventListener("devicechange", startPlayingTrack);
 
     return () => {
@@ -251,8 +252,6 @@ const Participant = ({ participant, local, modCount }) => {
     () => getAccountType(local?.user_name) === MOD || participant?.local,
     [getAccountType, local, participant]
   );
-
-  console.log('do we get')
 
   return (
     <Container>

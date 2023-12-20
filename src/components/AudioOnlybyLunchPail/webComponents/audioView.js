@@ -180,7 +180,6 @@ const listeners = useMemo(() => {
 
   const allParticipants = useMemo(() => {
     const s = [...mods, ...speakers, ...listeners2, ...ghostParticipants2]
-    console.log('runninallPrticipants',s);
     return (
       <CombinedContainer>
         {s?.map((p) => (
