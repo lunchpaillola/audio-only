@@ -37,8 +37,14 @@ const Participant = ({ participant, local, modCount }) => {
   const audioRef = useRef(null);
   const { ref, isVisible, setIsVisible } = useClickAway(false);
 
+  let name
+  const accountType = getAccountType(participant?.user_name);
 
-  const name = displayName(participant?.user_name);
+  if (accountType === MOD || accountType === SPEAKER || accountType === LISTENER){
+    name = displayName(participant?.user_name);
+  } else {
+    name = participant?.user_name;
+  }
   //Translating the role for the user to the
   const role =
     getAccountType(participant?.user_name) === MOD
@@ -49,7 +55,6 @@ const Participant = ({ participant, local, modCount }) => {
           ? "Listener"
           : "Listener";
   
-          console.log('role', role);
 
     const menuOptions = useMemo(() => {
     const mutedText = participant?.audio ? "Mute" : "Unmute";
@@ -77,7 +82,6 @@ const Participant = ({ participant, local, modCount }) => {
       participant?.local &&
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
-      console.log('am i getting vloser')
       options.push({
         text: mutedText,
         action: () => audioAction(participant),
@@ -96,7 +100,6 @@ const Participant = ({ participant, local, modCount }) => {
       getAccountType(local?.user_name) === MOD &&
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
-      console.log('am i getting closerrr')
       options.push({
         text: "Mute",
         action: () => handleMute(participant),
@@ -163,16 +166,13 @@ const Participant = ({ participant, local, modCount }) => {
      * be the last items
      */
     if (participant?.local) {
-      console.log("reach here?");
       const lastMod =
         modCount < 2 && getAccountType(participant?.user_name) === MOD;
-        console.log("reachhere?", lastMod);
       options.push({
         text: lastMod ? "End call" : "Leave call",
         action: () => (lastMod ? endCall() : leaveCall(participant)),
         warning: true,
-      });
-      console.log("reaaach here?", lastMod);
+      })
     }
 
     return options;

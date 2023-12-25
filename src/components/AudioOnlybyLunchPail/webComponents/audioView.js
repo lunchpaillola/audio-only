@@ -42,11 +42,8 @@ const AudioView = ({ _height, editor }) => {
     }
   }, []);
 
-  useEffect(() => {console.log('changing all Particpants', allParticipants)}, [allParticipants]);
-
   const getParticipantKey = (participant) => {
     const accountType = getAccountType(participant?.user_name);
-    console.log('accountType billie', accountType);
     if (accountType === MOD) {
       return `speaking-${participant.user_id}`;
     } else if (accountType === SPEAKER) {
@@ -85,13 +82,18 @@ const AudioView = ({ _height, editor }) => {
     );
   }, [participants, getAccountType, local, mods]);
 
-  const ghostParticipants2 = useMemo(() => 
-  participants?.filter(p => {
-    const accountType = getAccountType(p?.user_name);
-    return accountType !== SPEAKER && accountType !== LISTENER && accountType !== MOD;
-  }),
-  [participants, getAccountType]
-);
+  const ghostParticipants2 = useMemo(
+    () =>
+      participants?.filter((p) => {
+        const accountType = getAccountType(p?.user_name);
+        return (
+          accountType !== SPEAKER &&
+          accountType !== LISTENER &&
+          accountType !== MOD
+        );
+      }),
+    [participants, getAccountType]
+  );
 
   const local = useMemo(
     () => participants?.filter((p) => p?.local)[0],
@@ -106,39 +108,40 @@ const AudioView = ({ _height, editor }) => {
     [participants, getAccountType]
   );
   const speakers = useMemo(
-    () =>
-      participants?.filter((p) => getAccountType(p?.user_name) === SPEAKER),
+    () => participants?.filter((p) => getAccountType(p?.user_name) === SPEAKER),
     [participants, getAccountType]
   );
 
-  const listeners2 = useMemo(() => participants
-  ?.filter((p) => getAccountType(p?.user_name) === LISTENER)
-  .sort((a, b) => {
-    // Move raised hands to the front of the list
-    return a?.user_name.includes("✋") ? -1 : b?.user_name.includes("✋") ? 1 : 0;
-  }),
-  [participants, getAccountType]
-);
-
-
-
-const listeners = useMemo(() => {
-  const l = [...listeners2, ...ghostParticipants2];
-  return (
-    <ListeningContainer>
-      {l?.map((p) => (
-        <Participant
-          participant={p}
-          key={`listening-${p.user_id}`}
-          local={local}
-          modCount={mods?.length}
-        />
-      ))}
-    </ListeningContainer>
+  const listeners2 = useMemo(
+    () =>
+      participants
+        ?.filter((p) => getAccountType(p?.user_name) === LISTENER)
+        .sort((a, b) => {
+          // Move raised hands to the front of the list
+          return a?.user_name.includes("✋")
+            ? -1
+            : b?.user_name.includes("✋")
+              ? 1
+              : 0;
+        }),
+    [participants, getAccountType]
   );
-}, [participants, getAccountType, local, mods]);
 
-
+  const listeners = useMemo(() => {
+    const l = [...listeners2, ...ghostParticipants2];
+    return (
+      <ListeningContainer>
+        {l?.map((p) => (
+          <Participant
+            participant={p}
+            key={`listening-${p.user_id}`}
+            local={local}
+            modCount={mods?.length}
+          />
+        ))}
+      </ListeningContainer>
+    );
+  }, [participants, getAccountType, local, mods]);
 
   /*const listeners = useMemo(() => {
     const l = participants
@@ -179,7 +182,7 @@ const listeners = useMemo(() => {
   }, [mods, speakers, local]);
 
   const allParticipants = useMemo(() => {
-    const s = [...mods, ...speakers, ...listeners2, ...ghostParticipants2]
+    const s = [...mods, ...speakers, ...listeners2, ...ghostParticipants2];
     return (
       <CombinedContainer>
         {s?.map((p) => (
@@ -192,10 +195,7 @@ const listeners = useMemo(() => {
         ))}
       </CombinedContainer>
     );
-  }, [mods, speakers,listeners2, ghostParticipants2, local, getAccountType]);
-
-
-
+  }, [mods, speakers, listeners2, ghostParticipants2, local, getAccountType]);
 
   const handleAudioChange = useCallback(
     () => (local?.audio ? handleMute(local) : handleUnmute(local)),
@@ -238,7 +238,15 @@ const listeners = useMemo(() => {
                   height: _height - 60,
                 }}
               >
+                <View
+                  style={{
+                    display: "flex", // Use flex display
+                    justifyContent: "center", // Center content horizontally
+                    alignItems: "center", //
+                  }}
+                >
                 {allParticipants}
+                </View>
               </View>
               {/*Tray content*/}
               <View
@@ -301,8 +309,8 @@ const listeners = useMemo(() => {
                         End call
                       </LeaveButton>
                     ) : (
-                      <LeaveButton onPress={leaveCall} title="Leave call">
-                        Leave call
+                      <LeaveButton onPress={leaveCall} title="Leave">
+                        Leave
                       </LeaveButton>
                     )}
                   </TrayContent>
@@ -337,13 +345,14 @@ const ListeningContainer = styled.div`
 
 const CombinedContainer = styled.div`
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 32px; 
+  padding-bottom: 32px;
+  gap: 40px;
 `;
 
 const TrayContent = styled.div`
-  padding: 8px;
+  padding: 4px;
   width: 100vw;
   height: 60px;
   display: flex;
@@ -370,10 +379,9 @@ const LeaveButton = ({ onPress, title }) => (
       backgroundColor: "#FF0000",
       paddingHorizontal: 24,
       width: 150,
-      height: 44,
+      height: 40,
       marginTop: 10,
-      marginBottom:10,
-      margin: 8,
+      marginBottom: 10,
       paddingVertical: 8,
       borderRadius: 9999,
       alignItems: "center",
@@ -405,9 +413,11 @@ const AudioButton = ({ onPress, children }) => (
       backgroundColor: "#333",
       paddingHorizontal: 8,
       paddingVertical: 8,
-      width: 44,
-      height: 44,
-      borderRadius: 9999,
+      width: 40,
+      height: 40,
+      marginTop: 10,
+      paddingBottom: 4,
+      borderRadius: "50%",
       flexDirection: "vertical",
       alignItems: "center",
       justifyContent: "center",
