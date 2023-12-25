@@ -7,7 +7,7 @@ import {
 	TouchableOpacity,
 } from "react-native";
 import PropTypes from "prop-types";
-import { CallProvider, useCallState } from "../contexts/ReactCallProvider";
+import { CallProvider, useCallState } from "../contexts/ReactNativeCallProvider";
 
 
 const AudioOnlybyLunchPail = (props) => {
