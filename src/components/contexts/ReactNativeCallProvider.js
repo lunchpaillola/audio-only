@@ -37,6 +37,11 @@ export const CallProvider = ({
   const [updateParticipants, setUpdateParticipants] = useState(null);
 
   const endpointurl = "https://api.daily.co/v1/";
+
+  if (!url){
+    return null
+  }
+
   const urlObject = new URL(url);
   const room_name = urlObject.pathname
     .split("/")

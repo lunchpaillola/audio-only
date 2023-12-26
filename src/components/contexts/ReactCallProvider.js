@@ -38,14 +38,23 @@ export const CallProvider = ({
   const [updateParticipants, setUpdateParticipants] = useState(null);
 
   const endpointurl = "https://api.daily.co/v1/";
-  const urlObject = new URL(url);
-  const room_name = urlObject.pathname
-    .split("/")
-    .filter((part) => part !== "")
-    .pop();
 
-    console.log(url);
-  //action for creating a meeting token
+  if (!url){
+    return null
+  }
+
+  let room_name = null;
+
+  if (url) {
+    const urlObject = new URL(url);
+    room_name = urlObject.pathname
+      .split("/")
+      .filter((part) => part !== "")
+      .pop();
+  }
+  
+
+//action for creating a meeting token
   const createToken = async () => {
     try {
       const response = await fetch(endpointurl + "meeting-tokens", {
@@ -80,7 +89,7 @@ export const CallProvider = ({
     let userName;
     let newToken;
     let moderator;
-    if (moderator || owner) {
+    if ((moderator && room_name) || (owner && room_name)) {
       userName = `${participantName?.trim()}_${MOD}`;
       newToken = await createToken();
     } else {
@@ -123,7 +132,6 @@ export const CallProvider = ({
       options.token = newToken;
     }
 
-    console.log("url", url, options);
     await call
       .join(options)
       .then(() => {

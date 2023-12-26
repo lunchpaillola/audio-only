@@ -9,6 +9,8 @@
       "manifest": "./src/components/AudioOnlybyLunchPail/manifest.json"
     }
   ],
+  "iosInstallScript": "./scripts/install_ios.sh",
+  "androidInstallScript": "./scripts/install_android.sh",
   "webpackConfig": "./webpack.config.js"
 
 }
