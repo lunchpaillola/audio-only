@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, {useRef} from 'react';
 import {Image, StyleSheet, Pressable, Text} from 'react-native';
 import Menu, {MenuItem} from 'react-native-material-menu';

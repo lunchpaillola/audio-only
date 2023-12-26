@@ -10,8 +10,8 @@ import {
 import Participant from "./Participant";
 import styled from "styled-components";
 import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
-import MicIcon from "../icons/MicIcon";
-import MutedIcon from "../icons/MutedIcon";
+import MicIcon from "../webIcons/MicIcon";
+import MutedIcon from "../webIcons/MutedIcon";
 import theme from "../theme";
 import Audio from "./Audio";
 import EditorView from "../editor";

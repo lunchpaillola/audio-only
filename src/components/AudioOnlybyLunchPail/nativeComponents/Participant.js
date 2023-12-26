@@ -1,4 +1,6 @@
-import React, {useMemo, useState} from 'react';
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
+import React, {useMemo} from 'react';
 import {DailyMediaView} from '@daily-co/react-native-daily-js';
 import {View, Text, StyleSheet, Image, Platform} from 'react-native';
 import theme from './theme';

@@ -5,9 +5,9 @@ import { useCallState } from "../../contexts/ReactCallProvider";
 import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
 import useClickAway from "./useClickAway";
 import Menu from "./Menu";
-import MoreIcon from "../icons/MoreIcon";
-import MicIcon from "../icons/MicIcon";
-import MutedIcon from "../icons/MutedIcon";
+import MoreIcon from "../webIcons/MoreIcon";
+import MicIcon from "../webIcons/MicIcon";
+import MutedIcon from "../webIcons/MutedIcon";
 
 const AVATAR_DIMENSION = 72;
 const ADMIN_BADGE = "";
