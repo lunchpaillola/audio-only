@@ -3,6 +3,9 @@
   "description": "Quickly and reliably add audio chats to your Adalo apps",
   "logo": "./example-logo.png",
   "displayName": "Audio Only by LPL",
+  "demoAppURL": "https://previewer.adalo.com/cd2ebd72-9e57-468e-aaa5-fd6eec972283",
+  "supportURL": "help@lunchpaillabs.com",
+  "requiresThirdPartySubscription": true,
   "components": [
     {
       "name": "AudioOnlybyLunchPail",
@@ -11,5 +14,4 @@
   ],
   "iosInstallScript": "./scripts/install_ios.sh",
   "androidInstallScript": "./scripts/install_android.sh"
-
 }
