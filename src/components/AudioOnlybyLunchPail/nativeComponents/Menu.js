@@ -1,56 +1,49 @@
-/* eslint-disable react/prop-types */
-import React, {useRef} from 'react';
-import {Image, StyleSheet, Pressable, Text} from 'react-native';
-import Menu, {MenuItem} from 'react-native-material-menu';
-import theme from './theme';
+/* eslint-disable react-native/no-inline-styles */
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import theme from '../theme'; // Ensure you have a similar theme setup for React Native
 
-const ActionMenu = ({options}) => {
-  const menuRef = useRef(null);
-
-  const hideMenu = () => {
-    if (!menuRef?.current) return;
-    menuRef?.current.hide();
-  };
-
-  const showMenu = () => {
-    if (!menuRef?.current) return;
-    menuRef?.current.show();
-  };
-
+const Menu = ({options, setIsVisible}) => {
   return (
-    <Menu
-      ref={menuRef}
-      animationDuration={0}
-      button={
-        <Pressable style={styles.showMore} onPress={showMenu}>
-          <Image style={styles.moreIcon} source={require('./icons/more.png')} />
-        </Pressable>
-      }>
-      {options.map((o, i) => (
-        <MenuItem
+    <View style={styles.container}>
+      {(options || []).map((o, i) => (
+        <TouchableOpacity
           key={i}
+          style={[styles.option, o.warning && styles.warning]}
           onPress={() => {
             o.action();
-            hideMenu();
+            setIsVisible(false);
           }}>
           <Text
-            style={[styles.text, o.warning && {color: theme.colors.redDark}]}>
+            style={{
+              textAlign: 'center',
+              color: o.warning ? theme.colors.redDark : theme.colors.white,
+            }}>
             {o.text}
           </Text>
-        </MenuItem>
+        </TouchableOpacity>
       ))}
-    </Menu>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  text: {
-    fontSize: theme.fontSize.large,
-    color: theme.colors.blueDark,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    flexWrap: 'nowrap',
+  container: {
+    flexDirection: 'column',
+    backgroundColor: '#1F2D3D',
+    paddingVertical: 8,
+    width: 128,
+    height: 104,
+  },
+  option: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+    padding: 8,
+  },
+  warning: {
+    // Define specific styles for warning state if needed
   },
 });
 
-export default ActionMenu;
+export default Menu;

@@ -1,7 +1,6 @@
-/* eslint-disable react/prop-types */
-import React from "react";
-import { View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import React from 'react';
+import {View} from 'react-native';
+import Svg, {Path} from 'react-native-svg';
 
 const MicIcon = () => {
   return (

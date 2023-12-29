@@ -6,6 +6,7 @@ import AudioView from "./nativeComponents/audioView";
 
 const AudioOnlybyLunchPail = (props) => {
 	const {editor, _height, url, apiKey, owner, userName} = props
+	console.log('code got here' ,props);
 
 			return (
 				<CallProvider participantName={userName} url={url} owner={owner} apikey={apiKey}>

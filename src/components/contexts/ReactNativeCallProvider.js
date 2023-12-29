@@ -1,24 +1,22 @@
-/* eslint-disable no-console */
-/* eslint-disable react/prop-types */
 import React, {
   useCallback,
   useEffect,
   useState,
   createContext,
   useContext,
-} from "react";
-import Daily from "@daily-co/react-native-daily-js";
+} from 'react';
+import Daily from '@daily-co/react-native-daily-js';
 
 export const CallContext = createContext(null);
-export const MOD = "MOD";
-export const SPEAKER = "SPK";
-export const LISTENER = "LST";
-export const PREJOIN = "pre-join";
-export const INCALL = "in-call";
-const MSG_MAKE_MODERATOR = "make-moderator";
-const MSG_MAKE_SPEAKER = "make-speaker";
-const MSG_MAKE_LISTENER = "make-listener";
-const FORCE_EJECT = "force-eject";
+export const MOD = 'MOD';
+export const SPEAKER = 'SPK';
+export const LISTENER = 'LST';
+export const PREJOIN = 'pre-join';
+export const INCALL = 'in-call';
+const MSG_MAKE_MODERATOR = 'make-moderator';
+const MSG_MAKE_SPEAKER = 'make-speaker';
+const MSG_MAKE_LISTENER = 'make-listener';
+const FORCE_EJECT = 'force-eject';
 
 export const CallProvider = ({
   children,
@@ -36,167 +34,149 @@ export const CallProvider = ({
   const [activeSpeakerId, setActiveSpeakerId] = useState(null);
   const [updateParticipants, setUpdateParticipants] = useState(null);
 
-  const endpointurl = "https://api.daily.co/v1/";
-
-  if (!url){
-    return null
-  }
-
-  const urlObject = new URL(url);
-  const room_name = urlObject.pathname
-    .split("/")
-    .filter((part) => part !== "")
-    .pop();
-
-  console.log(url);
-  //action for creating a meeting token
-  const createToken = async () => {
-   try {
-     const response = await fetch(endpointurl + "meeting-tokens", {
-       method: "POST",
-       headers: {
-         Accept: "application/json",
-         Authorization: "Bearer " + apikey,
-         "Content-Type": "application/json",
-       },
-       body: JSON.stringify({
-         properties: {
-           room_name: room_name,
-           is_owner: true,
-         },
-       }),
-     });
-
-     const result = await response.json();
-     const token = result.token;
-
-     return token;
-   } catch (error) {
-     console.error("Error:", error);
-     // You may choose to return something here, like null, if you want to handle this case
-     // return null;
-     throw error; // or re-throw the error if you want the calling function to handle it
-   }
- };
-
-
- const joinRoom = useCallback(async () => {
-  //formatting the username
-  let userName;
-  let newToken;
-  let moderator;
-  if (moderator || owner) {
-    userName = `${participantName?.trim()}_${MOD}`;
-    newToken = await createToken();
-  } else {
-    userName = `${participantName?.trim()}_${LISTENER}`;
-  }
-
-  if (callFrame) {
-    callFrame.leave();
-  }
-
-  let roomInfo = { room_name };
-
-  const call = Daily.createCallObject({
-    audioSource: true, // start with audio on to get mic permission from user at start
-    videoSource: false,
-    dailyConfig: {
-      experimentalChromeVideoMuteLightOff: true,
-    },
+  const getAccountType = useCallback(username => {
+    if (!username) {
+      return;
+    }
+    // check last three letters to compare to account type constants
+    return username.slice(-3);
   });
 
-  call.on("joined-meeting", handleJoinedMeeting);
+  const displayName = useCallback(username => {
+    if (!username) {
+      return;
+    }
+    // return name without account type
+    return username.slice(0, username.length - 4);
+  });
+  const endpointurl = 'https://api.daily.co/v1/';
 
-  console.log("url", url, options);
-  const options = {
-    url: url,
-    userName,
+  if (!url) {
+    return null;
+  }
+
+  const room_name = url
+    .split('/')
+    .filter(part => part !== '')
+    .pop();
+
+  //action for creating a meeting token
+  const createToken = async () => {
+    try {
+      const response = await fetch(endpointurl + 'meeting-tokens', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer ' + apikey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          properties: {
+            room_name: room_name,
+            is_owner: true,
+          },
+        }),
+      });
+
+      const result = await response.json();
+      const token = result.token;
+
+      return token;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
   };
-  if (roomInfo.token) {
-    options.token = roomInfo?.token;
-  }
-  if (newToken) {
-    options.token = newToken;
-  }
 
-  console.log("url", url, options);
-  await call
-    .join(options)
-    .then(() => {
+  const joinRoom = async () => {
+    console.log('LOLALOG joinRoomfunction: joiningroom');
+    try {
+      if (callFrame) {
+        console.log('LOLALOG: there is already a callFrame so leaving');
+        await callFrame.leave();
+        await callFrame.destroy();
+      }
+      //formatting the username
+      let userName;
+      let newToken;
+      let moderator;
+      if (moderator || owner) {
+        userName = `${participantName?.trim()}_${MOD}`;
+        newToken = await createToken();
+      } else {
+        userName = `${participantName?.trim()}_${LISTENER}`;
+      }
+
+      let roomInfo = {room_name};
+
+      const call = Daily.createCallObject({videoSource: false});
+
+      console.log('LOLALOG: CALL', call);
+
+      const options = {
+        url: url,
+        userName,
+      };
+      if (roomInfo.token) {
+        options.token = roomInfo?.token;
+      }
+      if (newToken) {
+        options.token = newToken;
+      }
+
+      await call.join(options);
       setError(false);
       setCallFrame(call);
-      /**
-       * Now mute, so everyone joining is muted by default.
-       *
-       * IMPROVEMENT: track a speaker's muted state so if they
-       * are rejoining as a moderator, they don't have to turn
-       * their mic back on.
-       */
       call.setLocalAudio(false);
-    })
-    .catch((err) => {
+
+      setView(INCALL);
+    } catch (err) {
       if (err) {
+        console.error(err);
         setError(err);
       }
-    });
-  /**
-   * IMPROVEMENT: Every room should have a moderator. We should
-   * prevent people from joining (or kick them out after joining)
-   * if a mod isn't present. Since these demo rooms only last ten
-   * minutes we're not currently checking this.
-   */
-
-  return () => {
-    call.off("joined-meeting", handleJoinedMeeting);
+    }
   };
-}, [callFrame]);
 
- const handleJoinedMeeting = (evt) =>{
- setUpdateParticipants(
-   `joined-${evt?.participants?.local?.user_id}-${Date.now()}`
- );
- setView(INCALL);
- console.log("[JOINED MEETING]", evt?.participants?.local?.user_id);
-}
+  const handleJoinedMeeting = evt => {
+    setUpdateParticipants(
+      `joined-${evt?.participants?.local?.user_id}-${Date.now()}`,
+    );
+    setView(INCALL);
+  };
 
-  const handleParticipantJoinedOrUpdated = (evt) => {
+  const handleParticipantJoinedOrUpdated = evt => {
     setUpdateParticipants(`updated-${evt?.participant?.user_id}-${Date.now()}`);
-    console.log("[PARTICIPANT JOINED/UPDATED]", evt.participant);
+    console.log('[PARTICIPANT JOINED/UPDATED]', evt.participant);
   };
-  const handleParticipantLeft = (evt) => {
+  const handleParticipantLeft = evt => {
     setUpdateParticipants(`left-${evt?.participant?.user_id}-${Date.now()}`);
-    console.log("[PARTICIPANT LEFT]", evt);
+    console.log('[PARTICIPANT LEFT]', evt);
   };
-  const handleActiveSpeakerChange = (evt) => {
-    console.log("[ACTIVE SPEAKER CHANGE]", evt);
+  const handleActiveSpeakerChange = evt => {
+    console.log('[ACTIVE SPEAKER CHANGE]', evt);
     setActiveSpeakerId(evt?.activeSpeaker?.peerId);
   };
 
-  const playTrack = (evt) => {
+  const playTrack = evt => {
     console.log(
-      "[TRACK STARTED]",
-      evt.participant && evt.participant.session_id
+      '[TRACK STARTED]',
+      evt.participant && evt.participant.session_id,
     );
     setUpdateParticipants(
-      `track-started-${evt?.participant?.user_id}-${Date.now()}`
+      `track-started-${evt?.participant?.user_id}-${Date.now()}`,
     );
   };
-  const destroyTrack = (evt) => {
-    console.log("[DESTROY TRACK]", evt);
+  const destroyTrack = evt => {
+    console.log('[DESTROY TRACK]', evt);
     setUpdateParticipants(
-      `track-stopped-${evt?.participant?.user_id}-${Date.now()}`
+      `track-stopped-${evt?.participant?.user_id}-${Date.now()}`,
     );
   };
-
-  const getAccountType = (username) => {
-    if (!username) return;
-    // check last three letters to compare to account type constants
-    return username.slice(-3);
-  };
-
   const leaveCall = useCallback(() => {
-    if (!callFrame) return;
+    if (!callFrame) {
+      return;
+    }
     async function leave() {
       await callFrame.leave();
     }
@@ -205,36 +185,34 @@ export const CallProvider = ({
   }, [callFrame]);
 
   const removeFromCall = useCallback(
-    (participant) => {
-      if (!callFrame) return;
-      console.log("[EJECTING PARTICIPANT]", participant?.user_id);
-      callFrame.sendAppMessage({ msg: FORCE_EJECT }, participant?.session_id);
+    participant => {
+      if (!callFrame) {
+        return;
+      }
+      console.log('[EJECTING PARTICIPANT]', participant?.user_id);
+      callFrame.sendAppMessage({msg: FORCE_EJECT}, participant?.session_id);
       setUpdateParticipants(
-        `eject-participant-${participant?.user_id}-${Date.now()}`
+        `eject-participant-${participant?.user_id}-${Date.now()}`,
       );
     },
-    [callFrame]
+    [callFrame],
   );
 
   const endCall = useCallback(() => {
-    participants.forEach((p) => removeFromCall(p));
+    participants.forEach(p => removeFromCall(p));
     leaveCall();
   }, [participants, removeFromCall, leaveCall]);
 
-  const displayName = (username) => {
-    if (!username) return;
-    // return name without account type
-    return username.slice(0, username.length - 4);
-  };
-
   const updateUsername = useCallback(
-    (newAccountType) => {
-      if (![MOD, SPEAKER, LISTENER].includes(newAccountType)) return;
+    newAccountType => {
+      if (![MOD, SPEAKER, LISTENER].includes(newAccountType)) {
+        return;
+      }
       /**
        * In case the user had their hand raised, let's make
        * sure to remove that emoji before updating the account type.
        */
-      const split = callFrame?.participants()?.local?.user_name.split("✋ ");
+      const split = callFrame?.participants()?.local?.user_name.split('✋ ');
       const handRemoved = split.length === 2 ? split[1] : split[0];
 
       const display = displayName(handRemoved);
@@ -245,15 +223,17 @@ export const CallProvider = ({
        */
       callFrame.setUserName(`${display}_${newAccountType}`);
     },
-    [callFrame]
+    [callFrame],
   );
 
   const handleMute = useCallback(
-    (p) => {
-      if (!callFrame) return;
-      console.log("[MUTING]");
+    p => {
+      if (!callFrame) {
+        return;
+      }
+      console.log('[MUTING]');
 
-      if (p?.user_id === "local") {
+      if (p?.user_id === 'local') {
         callFrame.setLocalAudio(false);
       } else {
         callFrame.updateParticipant(p?.session_id, {
@@ -262,14 +242,17 @@ export const CallProvider = ({
       }
       setUpdateParticipants(`unmute-${p?.user_id}-${Date.now()}`);
     },
-    [callFrame]
+    [callFrame],
   );
   const handleUnmute = useCallback(
-    (p) => {
-      if (!callFrame) return;
-      console.log("UNMUTING");
+    p => {
+      if (!callFrame) {
+        console.log('LOLALOG CALLFRAME IS HERE RETURNING');
+        return;
+      }
+      console.log('UNMUTING');
 
-      if (p?.user_id === "local") {
+      if (p?.user_id === 'local') {
         callFrame.setLocalAudio(true);
       } else {
         callFrame.updateParticipant(p?.session_id, {
@@ -278,33 +261,38 @@ export const CallProvider = ({
       }
       setUpdateParticipants(`unmute-${p?.user_id}-${Date.now()}`);
     },
-    [callFrame]
+    [callFrame],
   );
   const raiseHand = useCallback(
-    (p) => {
-      if (!callFrame) return;
-      console.log("RAISING HAND");
+    p => {
+      if (!callFrame) {
+        return;
+      }
+      console.log('RAISING HAND');
       callFrame.setUserName(`✋ ${p?.user_name}`);
       setUpdateParticipants(`raising-hand-${p?.user_id}-${Date.now()}`);
     },
-    [callFrame]
+    [callFrame],
   );
   const lowerHand = useCallback(
-    (p) => {
-      if (!callFrame) return;
-      console.log("UNRAISING HAND");
-      const split = p?.user_name.split("✋ ");
+    p => {
+      if (!callFrame) {
+        return;
+      }
+      console.log('UNRAISING HAND');
+      const split = p?.user_name.split('✋ ');
       const username = split.length === 2 ? split[1] : split[0];
       callFrame.setUserName(username);
       setUpdateParticipants(`unraising-hand-${p?.user_id}-${Date.now()}`);
     },
-    [callFrame]
+    [callFrame],
   );
 
   const changeAccountType = useCallback(
     (participant, accountType) => {
-      if (!participant || ![MOD, SPEAKER, LISTENER].includes(accountType))
+      if (!participant || ![MOD, SPEAKER, LISTENER].includes(accountType)) {
         return;
+      }
       /**
        * In case someone snuck in through a direct link, give their username
        * the correct formatting
@@ -312,7 +300,7 @@ export const CallProvider = ({
       let userName;
       if (
         ![MOD, SPEAKER, LISTENER].includes(
-          getAccountType(participant?.user_name)
+          getAccountType(participant?.user_name),
         )
       ) {
         userName = participant?.user_name + `_${accountType}`;
@@ -328,34 +316,35 @@ export const CallProvider = ({
         accountType === MOD
           ? MSG_MAKE_MODERATOR
           : accountType === SPEAKER
-            ? MSG_MAKE_SPEAKER
-            : MSG_MAKE_LISTENER;
+          ? MSG_MAKE_SPEAKER
+          : MSG_MAKE_LISTENER;
 
-      console.log("[UPDATING ACCOUNT TYPE]");
+      console.log('[UPDATING ACCOUNT TYPE]');
       if (msg === MSG_MAKE_LISTENER) {
         handleMute(participant);
       }
       callFrame.sendAppMessage(
-        { userName, id: participant?.user_id, msg },
-        participant?.session_id
+        {userName, id: participant?.user_id, msg},
+        participant?.session_id,
       );
     },
-    [getAccountType, displayName, handleMute, callFrame]
+    [getAccountType, displayName, handleMute, callFrame],
   );
 
   useEffect(() => {
-    const handleAppMessage = async (evt) => {
-      console.log("[APP MESSAGE]", evt);
+    const handleAppMessage = async evt => {
+      console.log('[APP MESSAGE]', evt);
       try {
-       let userName;
+        let userName;
         switch (evt.data.msg) {
           case MSG_MAKE_MODERATOR:
-            console.log("[LEAVING]");
+            console.log('[LEAVING]');
             await callFrame.leave();
-            console.log("[REJOINING AS MOD]");
+            await callFrame.destroy();
+            console.log('[REJOINING AS MOD]');
             userName = evt?.data?.userName;
-            if (userName?.includes("✋")) {
-              const split = userName.split("✋ ");
+            if (userName?.includes('✋')) {
+              const split = userName.split('✋ ');
               userName = split.length === 2 ? split[1] : split[0];
             }
             joinRoom({
@@ -380,33 +369,35 @@ export const CallProvider = ({
       }
     };
 
-    const showError = (e) => {
-      console.log("[ERROR]");
+    const showError = e => {
+      console.log('[ERROR]');
       console.warn(e);
     };
 
-    if (!callFrame) return;
-    callFrame.on("error", showError);
-    callFrame.on("joined-meeting", handleJoinedMeeting);
-    callFrame.on("participant-joined", handleParticipantJoinedOrUpdated);
-    callFrame.on("participant-updated", handleParticipantJoinedOrUpdated);
-    callFrame.on("participant-left", handleParticipantLeft);
-    callFrame.on("app-message", handleAppMessage);
-    callFrame.on("active-speaker-change", handleActiveSpeakerChange);
-    callFrame.on("track-started", playTrack);
-    callFrame.on("track-stopped", destroyTrack);
+    if (!callFrame) {
+      return;
+    }
+    callFrame.on('error', showError);
+    callFrame.on('joined-meeting', handleJoinedMeeting);
+    callFrame.on('participant-joined', handleParticipantJoinedOrUpdated);
+    callFrame.on('participant-updated', handleParticipantJoinedOrUpdated);
+    callFrame.on('participant-left', handleParticipantLeft);
+    callFrame.on('app-message', handleAppMessage);
+    callFrame.on('active-speaker-change', handleActiveSpeakerChange);
+    callFrame.on('track-started', playTrack);
+    callFrame.on('track-stopped', destroyTrack);
 
     return () => {
       // clean up
-      callFrame.off("error", showError);
-      callFrame.off("joined-meeting", handleJoinedMeeting);
-      callFrame.off("participant-joined", handleParticipantJoinedOrUpdated);
-      callFrame.off("participant-updated", handleParticipantJoinedOrUpdated);
-      callFrame.off("participant-left", handleParticipantLeft);
-      callFrame.off("app-message", handleAppMessage);
-      callFrame.off("active-speaker-change", handleActiveSpeakerChange);
-      callFrame.off("track-started", playTrack);
-      callFrame.off("track-stopped", destroyTrack);
+      callFrame.off('error', showError);
+      callFrame.off('joined-meeting', handleJoinedMeeting);
+      callFrame.off('participant-joined', handleParticipantJoinedOrUpdated);
+      callFrame.off('participant-updated', handleParticipantJoinedOrUpdated);
+      callFrame.off('participant-left', handleParticipantLeft);
+      callFrame.off('app-message', handleAppMessage);
+      callFrame.off('active-speaker-change', handleActiveSpeakerChange);
+      callFrame.off('track-started', playTrack);
+      callFrame.off('track-stopped', destroyTrack);
     };
   }, [callFrame, participants, destroyTrack, playTrack, updateUsername]);
 
@@ -418,16 +409,20 @@ export const CallProvider = ({
    */
   useEffect(() => {
     if (updateParticipants) {
-      console.log("[UPDATING PARTICIPANT LIST]");
-      const list = Object.values(callFrame?.participants());
+      console.log('[UPDATING PARTICIPANT LIST]', callFrame, participants);
+      const participantData = callFrame?.participants();
+      const list = participantData ? Object.values(participantData) : [];
       setParticipants(list);
+      console.log('LOLALOG: Listing list', list);
     }
   }, [updateParticipants, callFrame]);
 
   useEffect(() => {
-    if (!callFrame) return;
+    if (!callFrame) {
+      return;
+    }
     async function getRoom() {
-      console.log("[GETTING ROOM DETAILS]");
+      console.log('[GETTING ROOM DETAILS]');
       const room = await callFrame?.room();
       const exp = room?.config?.exp;
       setRoom(room);
@@ -452,14 +447,14 @@ export const CallProvider = ({
         removeFromCall,
         raiseHand,
         lowerHand,
+        callFrame,
         activeSpeakerId,
         error,
         participants,
         room,
         roomExp,
         view,
-      }}
-    >
+      }}>
       {children}
     </CallContext.Provider>
   );
