@@ -9,7 +9,7 @@ import {
   MOD,
   SPEAKER,
 } from '../shared/callProvider';
-import Menu from './Menu';
+import Menu from '../shared/Menu';
 import MicIcon from '../icons/MicIcon';
 import MutedIcon from '../icons/MutedIcon';
 import MoreIcon from '../icons/MoreIcon';
