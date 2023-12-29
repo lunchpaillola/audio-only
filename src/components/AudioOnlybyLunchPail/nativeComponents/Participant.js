@@ -2,7 +2,7 @@
 import React, {useMemo, useState} from 'react';
 import {DailyMediaView} from '@daily-co/react-native-daily-js';
 import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
-import theme from '../theme';
+import theme from '../shared/theme';
 import {
   useCallState,
   LISTENER,
@@ -10,9 +10,9 @@ import {
   SPEAKER,
 } from '../../contexts/ReactNativeCallProvider';
 import Menu from './Menu';
-import MicIcon from '../nativeIcons/MicIcon';
-import MutedIcon from '../nativeIcons/MutedIcon';
-import MoreIcon from '../nativeIcons/MoreIcon';
+import MicIcon from '../icons/MicIcon';
+import MutedIcon from '../icons/MutedIcon';
+import MoreIcon from '../icons/MoreIcon';
 
 const AVATAR_DIMENSION = 72;
 const ADMIN_BADGE = '';

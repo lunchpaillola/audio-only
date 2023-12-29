@@ -6,9 +6,9 @@ import {
   INCALL,
   PREJOIN,
   useCallState,
-} from "../../contexts/ReactCallProvider";
-import Participant from "./Participant";
-import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
+} from "../shared/callProvider";
+import Participant from "../participant/participant";
+import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
 import Audio from "./Audio";
@@ -85,7 +85,7 @@ const AudioView = ({ _height, editor }) => {
 
 
   const allParticipants = useMemo(() => {
-    const s = [...mods, ...speakers, ...listeners2];
+    const s = [...mods, ...speakers, ...listeners2,];
     return (
       <CombinedContainer>
         {s?.map((p) => (
@@ -98,7 +98,7 @@ const AudioView = ({ _height, editor }) => {
         ))}
       </CombinedContainer>
     );
-  }, [mods, speakers, listeners2, ghostParticipants2, local, getAccountType]);
+  }, [mods, speakers, listeners2, local, getAccountType]);
 
   const handleAudioChange = useCallback(
     () => (local?.audio ? handleMute(local) : handleUnmute(local)),

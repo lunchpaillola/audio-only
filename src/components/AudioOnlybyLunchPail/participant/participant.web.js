@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState, useMemo, useRef } from "react";
-import { useCallState } from "../../contexts/ReactCallProvider";
+import { useCallState } from "../shared/callProvider";
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
+import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
 import Menu from "../shared/Menu";
 import MoreIcon from "../icons/MoreIcon";
 import MicIcon from "../icons/MicIcon";

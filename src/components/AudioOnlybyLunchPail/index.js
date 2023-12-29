@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from "prop-types";
-import {CallProvider} from "../contexts/ReactNativeCallProvider";
-import AudioView from "./nativeComponents/audioView";
+import {CallProvider} from "./shared/callProvider";
+import AudioView from "./audioView/audioView";
 
 
 const AudioOnlybyLunchPail = (props) => {

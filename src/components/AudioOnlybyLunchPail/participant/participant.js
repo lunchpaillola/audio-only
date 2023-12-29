@@ -1,26 +1,31 @@
-/* eslint-disable react/prop-types */
-import React, { useEffect, useState, useMemo, useRef } from "react";
-import { useCallState } from "../../contexts/ReactCallProvider";
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import { LISTENER, MOD, SPEAKER } from "../../contexts/ReactCallProvider";
-import Menu from "../shared/Menu";
-import MoreIcon from "../icons/MoreIcon";
-import MicIcon from "../icons/MicIcon";
-import MutedIcon from "../icons/MutedIcon";
+/* eslint-disable react-native/no-inline-styles */
+import React, {useMemo, useState} from 'react';
+import {DailyMediaView} from '@daily-co/react-native-daily-js';
+import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
 import theme from '../shared/theme';
+import {
+  useCallState,
+  LISTENER,
+  MOD,
+  SPEAKER,
+} from '../shared/callProvider';
+import Menu from './Menu';
+import MicIcon from '../icons/MicIcon';
+import MutedIcon from '../icons/MutedIcon';
+import MoreIcon from '../icons/MoreIcon';
 
 const AVATAR_DIMENSION = 72;
-const ADMIN_BADGE = "";
+const ADMIN_BADGE = '';
 
-const initials = (name) =>
+const initials = name =>
   name
     ? name
-        .split(" ")
-        .map((n) => n.charAt(0))
-        .join("")
-    : "";
+        .split(' ')
+        .map(n => n.charAt(0))
+        .join('')
+    : '';
 
-const Participant = ({ participant, local, modCount }) => {
+const Participant = ({participant, local, modCount, zIndex}) => {
   const {
     getAccountType,
     activeSpeakerId,
@@ -34,34 +39,25 @@ const Participant = ({ participant, local, modCount }) => {
     leaveCall,
     endCall,
   } = useCallState();
-  const audioRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  let name
-  const accountType = getAccountType(participant?.user_name);
-
-  if (accountType === MOD || accountType === SPEAKER || accountType === LISTENER){
-    name = displayName(participant?.user_name);
-  } else {
-    name = participant?.user_name;
-  }
+  const name = displayName(participant?.user_name);
   //Translating the role for the user to the
   const role =
     getAccountType(participant?.user_name) === MOD
-      ? "Host"
+      ? 'Host'
       : getAccountType(participant?.user_name) === SPEAKER
-        ? "Speaker"
-        : getAccountType(participant?.user_name) === LISTENER
-          ? "Listener"
-          : "Listener";
-  
+      ? 'Speaker'
+      : getAccountType(participant?.user_name) === LISTENER
+      ? 'Listener'
+      : 'Listener';
 
-    const menuOptions = useMemo(() => {
-    const mutedText = participant?.audio ? "Mute" : "Unmute";
+  const menuOptions = useMemo(() => {
+    const mutedText = participant?.audio ? 'Mute' : 'Unmute';
 
     const audioAction = participant?.audio
-      ? (id) => handleMute(id)
-      : (id) => handleUnmute(id);
+      ? id => handleMute(id)
+      : id => handleUnmute(id);
 
     /**
      * Determine what the menu options are based on the account type.
@@ -101,7 +97,7 @@ const Participant = ({ participant, local, modCount }) => {
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
       options.push({
-        text: "Mute",
+        text: 'Mute',
         action: () => handleMute(participant),
       });
     }
@@ -111,15 +107,15 @@ const Participant = ({ participant, local, modCount }) => {
         if (!participant?.local) {
           const o = [
             {
-              text: "Make moderator",
+              text: 'Make moderator',
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: "Make listener",
+              text: 'Make listener',
               action: () => changeAccountType(participant, LISTENER),
             },
             {
-              text: "Remove from call",
+              text: 'Remove from call',
               action: () => removeFromCall(participant),
               warning: true,
             },
@@ -130,25 +126,25 @@ const Participant = ({ participant, local, modCount }) => {
       case LISTENER:
         if (participant?.local) {
           options.push({
-            text: participant?.user_name.includes("✋")
-              ? "Lower hand"
-              : "Raise hand ✋",
-            action: participant?.user_name.includes("✋")
+            text: participant?.user_name.includes('✋')
+              ? 'Lower hand'
+              : 'Raise hand ✋',
+            action: participant?.user_name.includes('✋')
               ? () => lowerHand(participant)
               : () => raiseHand(participant),
           });
         } else {
           const o = [
             {
-              text: "Make moderator",
+              text: 'Make moderator',
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: "Make speaker",
+              text: 'Make speaker',
               action: () => changeAccountType(participant, SPEAKER),
             },
             {
-              text: "Remove from call",
+              text: 'Remove from call',
               action: () => removeFromCall(participant),
               warning: true,
             },
@@ -169,10 +165,10 @@ const Participant = ({ participant, local, modCount }) => {
       const lastMod =
         modCount < 2 && getAccountType(participant?.user_name) === MOD;
       options.push({
-        text: lastMod ? "End call" : "Leave call",
+        text: lastMod ? 'End call' : 'Leave call',
         action: () => (lastMod ? endCall() : leaveCall(participant)),
         warning: true,
-      })
+      });
     }
 
     return options;
@@ -191,72 +187,30 @@ const Participant = ({ participant, local, modCount }) => {
     raiseHand,
   ]);
 
-  useEffect(() => {
-    if (!participant?.audioTrack || !audioRef.current) return;
-    // sanity check to make sure this is an audio track
-    if (
-      participant?.audioTrack?.track &&
-      !participant?.audioTrack?.track?.kind === "audio"
-    )
-      return;
-    // don't play the local audio track (echo!)
-    if (participant?.local) return;
-    // set the audio source for everyone else
+  const showMoreMenu = useMemo(() => {
+    return getAccountType(local?.user_name) === MOD || participant?.local;
+  }, [getAccountType, local, participant]);
 
-    /**
-      Note: Safari will block the autoplay of audio by default.
+  const audioTrack = useMemo(
+    () =>
+      participant?.tracks?.audio?.state === 'playable'
+        ? participant?.tracks?.audio?.track
+        : null,
+    [participant?.tracks?.audio?.state, participant?.tracks?.audio?.track],
+  );
 
-      Improvement: implement a timeout to check if audio stream is playing
-      and prompt the user if not, e.g:
-      
-      let playTimeout;
-      const handleCanPlay = () => {
-        playTimeout = setTimeout(() => {
-          showPlayAudioPrompt(true);
-        }, 1500);
-      };
-      const handlePlay = () => {
-        clearTimeout(playTimeout);
-      };
-      audioEl.current.addEventListener('canplay', handleCanPlay);
-      audioEl.current.addEventListener('play', handlePlay);
-     */
-    audioRef.current.srcObject = new MediaStream([participant?.audioTrack]);
-  }, [participant?.audioTrack, participant?.local]);
-
-  useEffect(() => {
-    // On iOS safari, when headphones are disconnected, all audio elements are paused.
-    // This means that when a user disconnects their headphones, that user will not
-    // be able to hear any other users until they mute/unmute their mics.
-    // To fix that, we call `play` on each audio track on all devicechange events.
-
-    const startPlayingTrack = () => {
-      if (audioRef.current) {
-        audioRef.current.play().catch(error => {
-          console.error("Error trying to play audio:", error);
-        });
-    }
-    };
-  
-    navigator.mediaDevices.addEventListener("devicechange", startPlayingTrack);
-
-    return () => {
-      navigator.mediaDevices.removeEventListener(
-        "devicechange",
-        startPlayingTrack
-      );
-    };
-  }, [audioRef]);
-
-  const showMoreMenu = useMemo(
-    () => getAccountType(local?.user_name) === MOD || participant?.local,
-    [getAccountType, local, participant]
+  console.log(
+    'LOLALOG: Rendering DailyMediaView for participant:',
+    participant.user_id,
+    'Audio track:',
+    audioTrack,
   );
 
   return (
     <View
       style={[
-        styles.container
+        styles.container,
+        {zIndex, elevation: Platform.OS === 'android' ? zIndex : 0},
       ]}>
       <View
         style={[
@@ -292,13 +246,30 @@ const Participant = ({ participant, local, modCount }) => {
           <Menu options={menuOptions} setIsVisible={setIsVisible} />
         </View>
       )}
-      {participant?.audioTrack && (
-        <audio autoPlay id={`audio-${participant.user_id}`} ref={audioRef} />
+      {audioTrack && (
+        <DailyMediaView
+          id={`audio-${participant.user_id}`}
+          videoTrack={null}
+          audioTrack={audioTrack}
+        />
       )}
     </View>
   );
 };
 
+const Container = ({children}) => (
+  <View
+    style={{
+      margin: 8,
+      flex: 1,
+      alignItems: 'flex-start',
+      position: 'relative',
+      maxWidth: 104,
+      flexDirection: 'column',
+    }}>
+    {children}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -383,7 +354,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2b3e56',
   },
   showMore: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.white,
     padding: 4,
     borderRadius: 24,
     position: 'absolute',

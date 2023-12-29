@@ -9,12 +9,12 @@ import {
   SPEAKER,
   PREJOIN,
   useCallState,
-} from '../../contexts/ReactNativeCallProvider';
+} from '../shared/callProvider';
 import PropTypes from 'prop-types';
 import {ActivityIndicator} from 'react-native';
 import MicIcon from '../icons/MicIcon';
 import MutedIcon from '../icons/MutedIcon';
-import Participant from './Participant';
+import Participant from '../participant/participant';
 
 const AudioView = ({_height}) => {
   const {
