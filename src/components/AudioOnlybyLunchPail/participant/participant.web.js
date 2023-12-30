@@ -1,16 +1,13 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useCallState } from "../shared/callProvider";
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
 import Menu from "../shared/Menu";
 import MoreIcon from "../icons/MoreIcon";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
-import theme from '../shared/theme';
-
-const AVATAR_DIMENSION = 72;
-const ADMIN_BADGE = "";
+import { participantStyles } from "../shared/participantStyles";
 
 const initials = (name) =>
   name
@@ -256,39 +253,39 @@ const Participant = ({ participant, local, modCount }) => {
   return (
     <View
       style={[
-        styles.container
+       participantStyles.container
       ]}>
       <View
         style={[
-          styles.avatar,
+         participantStyles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
-            styles.isActive,
+            participantStyles.isActive,
         ]}>
-        <Text style={styles.initials} numberOfLines={1}>
+        <Text style={participantStyles.initials} numberOfLines={1}>
           {initials(participant?.user_name)}
         </Text>
       </View>
       {getAccountType(participant?.user_name) !== LISTENER && (
-        <View style={styles.audioIcon}>
+        <View style={participantStyles.audioIcon}>
           {participant?.audio ? <MicIcon /> : <MutedIcon />}
         </View>
       )}
-      <Text style={styles.name} numberOfLines={1}>
+      <Text style={participantStyles.name} numberOfLines={1}>
         {name}
       </Text>
-      <Text style={styles.role} numberOfLines={1}>
+      <Text style={participantStyles.role} numberOfLines={1}>
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
         <TouchableOpacity
-          style={styles.menuButton}
+          style={participantStyles.menuButton}
           onPress={() => setIsVisible(!isVisible)}>
           <MoreIcon />
         </TouchableOpacity>
       )}
       {isVisible && (
-        <View style={styles.menuContainer}>
+        <View style={participantStyles.menuContainer}>
           <Menu options={menuOptions} setIsVisible={setIsVisible} />
         </View>
       )}
@@ -298,113 +295,4 @@ const Participant = ({ participant, local, modCount }) => {
     </View>
   );
 };
-
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 8,
-    flex: 1,
-    alignItems: 'flex-start',
-    position: 'relative',
-    maxWidth: 104,
-    flexDirection: 'column',
-  },
-
-  avatarText: {
-    fontSize: 16,
-    color: '#fff',
-  },
-  audioIcon: {
-    position: 'absolute',
-    backgroundColor: '#1f2d3d',
-    width: 32,
-    height: 32,
-    top: AVATAR_DIMENSION - 28,
-    paddingTop: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 16,
-  },
-  menuButton: {
-    backgroundColor: '#1f2d3d',
-    width: 32,
-    height: 32,
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 16,
-    top: AVATAR_DIMENSION - 28,
-    padding: 0,
-    right: 32,
-  },
-  menuContainer: {
-    position: 'absolute',
-    bottom: -64,
-    right: -96,
-    zIndex: 10,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 9999,
-    backgroundColor: '#2b3e56',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    color: '#fff',
-    marginVertical: 4,
-    fontWeight: '400',
-    paddingTop: 8,
-    fontSize: 12,
-    width: 72,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  role: {
-    color: '#c8d1dc',
-    marginVertical: 4,
-    fontWeight: '400',
-    fontSize: 12,
-    width: 72,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  initials: {
-    fontSize: 16,
-    color: '#fff',
-    lineHeight: 32,
-  },
-  isActive: {
-    borderColor: 'green',
-    borderWidth: 2,
-  },
-  isMuted: {
-    backgroundColor: '#2b3e56',
-  },
-  showMore: {
-    backgroundColor: '#fff',
-    padding: 4,
-    borderRadius: 24,
-    position: 'absolute',
-    top: -50,
-    right: -6,
-  },
-  menu: {
-    position: 'absolute',
-    top: AVATAR_DIMENSION - 28,
-    right: -4,
-    zIndex: 15,
-    backgroundColor: theme.colors.white,
-    padding: 4,
-    borderRadius: 16,
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    shadowOffset: {
-      height: 1,
-      width: 1,
-    },
-  },
-});
-
 export default Participant;

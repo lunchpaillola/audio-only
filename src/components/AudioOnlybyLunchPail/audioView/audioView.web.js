@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useMemo, useCallback } from "react";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity } from "react-native";
 import PropTypes from "prop-types";
 import {
   INCALL,
@@ -134,23 +134,21 @@ const AudioView = ({ _height, editor }) => {
                 color: "white",
               }}
             >
+              <ScrollView
+              style={{
+                padding: 16,
+                height: _height - 60,
+              }}>
               <View
                 style={{
-                  padding: 16,
-                  overflowY: "auto",
-                  height: _height - 60,
-                }}
-              >
-                <View
-                  style={{
-                    display: "flex", // Use flex display
-                    justifyContent: "center", // Center content horizontally
-                    alignItems: "center", //
-                  }}
-                >
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  flexWrap: 'wrap',
+                }}>
                 {allParticipants}
-                </View>
               </View>
+            </ScrollView>
               {/*Tray content*/}
               <View
                 style={{

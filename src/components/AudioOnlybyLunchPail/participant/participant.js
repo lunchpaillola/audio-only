@@ -1,8 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useMemo, useState} from 'react';
 import {DailyMediaView} from '@daily-co/react-native-daily-js';
-import {View, Text, StyleSheet, TouchableOpacity, Platform} from 'react-native';
-import theme from '../shared/theme';
+import {View, Text, TouchableOpacity, Platform} from 'react-native';
 import {
   useCallState,
   LISTENER,
@@ -13,9 +12,8 @@ import Menu from '../shared/Menu';
 import MicIcon from '../icons/MicIcon';
 import MutedIcon from '../icons/MutedIcon';
 import MoreIcon from '../icons/MoreIcon';
+import { participantStyles } from "../shared/participantStyles";
 
-const AVATAR_DIMENSION = 72;
-const ADMIN_BADGE = '';
 
 const initials = name =>
   name
@@ -199,50 +197,43 @@ const Participant = ({participant, local, modCount, zIndex}) => {
     [participant?.tracks?.audio?.state, participant?.tracks?.audio?.track],
   );
 
-  console.log(
-    'LOLALOG: Rendering DailyMediaView for participant:',
-    participant.user_id,
-    'Audio track:',
-    audioTrack,
-  );
-
   return (
     <View
       style={[
-        styles.container,
+        participantStyles.container,
         {zIndex, elevation: Platform.OS === 'android' ? zIndex : 0},
       ]}>
       <View
         style={[
-          styles.avatar,
+         participantStyles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
-            styles.isActive,
+            participantStyles.isActive,
         ]}>
-        <Text style={styles.initials} numberOfLines={1}>
+        <Text style={participantStyles.initials} numberOfLines={1}>
           {initials(participant?.user_name)}
         </Text>
       </View>
       {getAccountType(participant?.user_name) !== LISTENER && (
-        <View style={styles.audioIcon}>
+        <View style={participantStyles.audioIcon}>
           {participant?.audio ? <MicIcon /> : <MutedIcon />}
         </View>
       )}
-      <Text style={styles.name} numberOfLines={1}>
+      <Text style={participantStyles.name} numberOfLines={1}>
         {name}
       </Text>
-      <Text style={styles.role} numberOfLines={1}>
+      <Text style={participantStyles.role} numberOfLines={1}>
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
         <TouchableOpacity
-          style={styles.menuButton}
+          style={participantStyles.menuButton}
           onPress={() => setIsVisible(!isVisible)}>
           <MoreIcon />
         </TouchableOpacity>
       )}
       {isVisible && (
-        <View style={styles.menuContainer}>
+        <View style={participantStyles.menuContainer}>
           <Menu options={menuOptions} setIsVisible={setIsVisible} />
         </View>
       )}
@@ -256,126 +247,4 @@ const Participant = ({participant, local, modCount, zIndex}) => {
     </View>
   );
 };
-
-const Container = ({children}) => (
-  <View
-    style={{
-      margin: 8,
-      flex: 1,
-      alignItems: 'flex-start',
-      position: 'relative',
-      maxWidth: 104,
-      flexDirection: 'column',
-    }}>
-    {children}
-  </View>
-);
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 8,
-    flex: 1,
-    alignItems: 'flex-start',
-    position: 'relative',
-    maxWidth: 104,
-    flexDirection: 'column',
-  },
-
-  avatarText: {
-    fontSize: 16,
-    color: '#fff',
-  },
-  audioIcon: {
-    position: 'absolute',
-    backgroundColor: '#1f2d3d',
-    width: 32,
-    height: 32,
-    top: AVATAR_DIMENSION - 28,
-    paddingTop: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 16,
-  },
-  menuButton: {
-    backgroundColor: '#1f2d3d',
-    width: 32,
-    height: 32,
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 16,
-    top: AVATAR_DIMENSION - 28,
-    padding: 0,
-    right: 32,
-  },
-  menuContainer: {
-    position: 'absolute',
-    bottom: -64,
-    right: -96,
-    zIndex: 10,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 9999,
-    backgroundColor: '#2b3e56',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  name: {
-    color: '#fff',
-    marginVertical: 4,
-    fontWeight: '400',
-    paddingTop: 8,
-    fontSize: 12,
-    width: 72,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  role: {
-    color: '#c8d1dc',
-    marginVertical: 4,
-    fontWeight: '400',
-    fontSize: 12,
-    width: 72,
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  initials: {
-    fontSize: 16,
-    color: '#fff',
-    lineHeight: 32,
-  },
-  isActive: {
-    borderColor: 'green',
-    borderWidth: 2,
-  },
-  isMuted: {
-    backgroundColor: '#2b3e56',
-  },
-  showMore: {
-    backgroundColor: theme.colors.white,
-    padding: 4,
-    borderRadius: 24,
-    position: 'absolute',
-    top: -50,
-    right: -6,
-  },
-  menu: {
-    position: 'absolute',
-    top: AVATAR_DIMENSION - 28,
-    right: -4,
-    zIndex: 15,
-    backgroundColor: theme.colors.white,
-    padding: 4,
-    borderRadius: 16,
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    shadowOffset: {
-      height: 1,
-      width: 1,
-    },
-  },
-});
-
 export default Participant;

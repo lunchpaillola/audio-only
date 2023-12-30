@@ -36,7 +36,6 @@ const AudioView = ({_height}) => {
       try {
         // Await the joinRoom function to ensure it completes before proceeding
         if (view === PREJOIN && !callFrame) {
-          console.log('LOLALOG joining room prejon no callframei');
           await joinRoom();
         }
       } catch (error) {
@@ -66,7 +65,6 @@ const AudioView = ({_height}) => {
   const local = useMemo(
     () => participants?.filter(p => p?.local)[0],
     [participants],
-    console.log('participants', participants),
   );
 
   const mods = useMemo(
