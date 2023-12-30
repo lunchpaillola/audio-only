@@ -3,11 +3,10 @@ import { StyleSheet } from 'react-native';
 export const participantStyles = StyleSheet.create({
   container: {
     margin: 8,
-    flex: 1,
     alignItems: 'flex-start',
     position: 'relative',
-    maxWidth: 104,
     flexDirection: 'column',
+    width: 72,
   },
 
   avatarText: {
@@ -35,12 +34,12 @@ export const participantStyles = StyleSheet.create({
     borderRadius: 16,
     top: 72 - 28,
     padding: 0,
-    right: 32,
+    right: 0,
   },
   menuContainer: {
     position: 'absolute',
     bottom: -64,
-    right: -96,
+    right: -64,
     zIndex: 10,
   },
   avatar: {
@@ -94,12 +93,9 @@ export const participantStyles = StyleSheet.create({
     position: 'absolute',
     top: 72 - 28,
     right: -4,
-    zIndex: 15,
-    backgroundColor: "white",
+    backgroundColor: "#1f2d3d",
     padding: 4,
     borderRadius: 16,
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
     shadowOffset: {
       height: 1,
       width: 1,

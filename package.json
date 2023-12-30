@@ -1,7 +1,7 @@
 {
   "name": "audioonlychat",
   "description": "Quickly and reliably add audio chats to your Aadalo apps",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.js",
   "license": "ISC",
   "author": "Lunch Pail Labs",

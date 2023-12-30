@@ -13,6 +13,7 @@ export const SPEAKER = 'SPK';
 export const LISTENER = 'LST';
 export const PREJOIN = 'pre-join';
 export const INCALL = 'in-call';
+export const LEAVESCREEN = 'leave-screen';
 const MSG_MAKE_MODERATOR = 'make-moderator';
 const MSG_MAKE_SPEAKER = 'make-speaker';
 const MSG_MAKE_LISTENER = 'make-listener';
@@ -25,7 +26,7 @@ export const CallProvider = ({
  owner,
  apikey,
 }) => {
- const [view, setView] = useState(PREJOIN); // pre-join | in-call
+ const [view, setView] = useState(PREJOIN); 
  const [callFrame, setCallFrame] = useState(null);
  const [participants, setParticipants] = useState([]);
  const [room, setRoom] = useState(null);
@@ -88,19 +89,17 @@ export const CallProvider = ({
    }
  };
 
- const joinRoom = async () => {
-   console.log('LOLALOG joinRoomfunction: joiningroom');
+ const joinRoom = async (isModerator) => {
+  console.log('makingMod', isModerator);
    try {
      if (callFrame) {
-       console.log('LOLALOG: there is already a callFrame so leaving');
        await callFrame.leave();
        await callFrame.destroy();
      }
      //formatting the username
      let userName;
      let newToken;
-     let moderator;
-     if (moderator || owner) {
+     if (isModerator || owner) {
        userName = `${participantName?.trim()}_${MOD}`;
        newToken = await createToken();
      } else {
@@ -111,16 +110,16 @@ export const CallProvider = ({
 
      const call = Daily.createCallObject({videoSource: false});
 
-     console.log('LOLALOG: CALL', call);
-
      const options = {
        url: url,
        userName,
      };
      if (roomInfo.token) {
+      console.log('roominfo', roominf.token);
        options.token = roomInfo?.token;
      }
      if (newToken) {
+      console.log('a new token', newToken);
        options.token = newToken;
      }
 
@@ -181,7 +180,7 @@ export const CallProvider = ({
      await callFrame.leave();
    }
    leave();
-   setView(PREJOIN);
+   setView(LEAVESCREEN);
  }, [callFrame]);
 
  const removeFromCall = useCallback(
@@ -247,7 +246,6 @@ export const CallProvider = ({
  const handleUnmute = useCallback(
    p => {
      if (!callFrame) {
-       console.log('LOLALOG CALLFRAME IS HERE RETURNING');
        return;
      }
      console.log('UNMUTING');
@@ -336,6 +334,7 @@ export const CallProvider = ({
      console.log('[APP MESSAGE]', evt);
      try {
        let userName;
+       let isModerator;
        switch (evt.data.msg) {
          case MSG_MAKE_MODERATOR:
            console.log('[LEAVING]');
@@ -343,14 +342,13 @@ export const CallProvider = ({
            await callFrame.destroy();
            console.log('[REJOINING AS MOD]');
            userName = evt?.data?.userName;
+           isModerator=true;
            if (userName?.includes('✋')) {
              const split = userName.split('✋ ');
              userName = split.length === 2 ? split[1] : split[0];
            }
            joinRoom({
-             moderator: true,
-             userName,
-             name: room?.name,
+            isModerator,
            });
            break;
          case MSG_MAKE_SPEAKER:
@@ -409,11 +407,9 @@ export const CallProvider = ({
   */
  useEffect(() => {
    if (updateParticipants) {
-     console.log('[UPDATING PARTICIPANT LIST]', callFrame, participants);
      const participantData = callFrame?.participants();
      const list = participantData ? Object.values(participantData) : [];
      setParticipants(list);
-     console.log('LOLALOG: Listing list', list);
    }
  }, [updateParticipants, callFrame]);
 
@@ -422,7 +418,6 @@ export const CallProvider = ({
      return;
    }
    async function getRoom() {
-     console.log('[GETTING ROOM DETAILS]');
      const room = await callFrame?.room();
      const exp = room?.config?.exp;
      setRoom(room);

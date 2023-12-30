@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1F2D3D',
     paddingVertical: 8,
     width: 128,
-    height: 104,
+    height: 204,
   },
   option: {
     fontSize: 12,

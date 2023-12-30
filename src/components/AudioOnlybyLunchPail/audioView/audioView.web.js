@@ -6,6 +6,7 @@ import {
   INCALL,
   PREJOIN,
   useCallState,
+  LEAVESCREEN,
 } from "../shared/callProvider";
 import Participant from "../participant/participant";
 import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
@@ -77,17 +78,23 @@ const AudioView = ({ _height, editor }) => {
           return a?.user_name.includes("✋")
             ? -1
             : b?.user_name.includes("✋")
-              ? 1
-              : 0;
+            ? 1
+            : 0;
         }),
     [participants, getAccountType]
   );
 
-
   const allParticipants = useMemo(() => {
-    const s = [...mods, ...speakers, ...listeners2,];
+    const s = [...mods, ...speakers, ...listeners2];
     return (
-      <CombinedContainer>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 32,
+        }}
+      >
         {s?.map((p) => (
           <Participant
             participant={p}
@@ -96,7 +103,7 @@ const AudioView = ({ _height, editor }) => {
             modCount={mods?.length}
           />
         ))}
-      </CombinedContainer>
+      </View>
     );
   }, [mods, speakers, listeners2, local, getAccountType]);
 
@@ -114,15 +121,47 @@ const AudioView = ({ _height, editor }) => {
     <>
       {editor ? (
         <EditorView _height={_height}></EditorView>
-      ) : view !== INCALL ? (
+      ) : view == PREJOIN ? (
         <View
           style={{
             height: _height,
             justifyContent: "center",
             alignItems: "center",
+            backgroundColor: '#131A24',
           }}
         >
           <ActivityIndicator size="large" color="#ffff" />
+        </View>
+      ) : view == LEAVESCREEN ? (
+        <View
+          style={{
+            height: _height,
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
+            backgroundColor: '#131A24',
+          }}
+        >
+          <Text
+            style={{
+              color: "white",
+              fontSize: 24,
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+          >
+            👋{"\n"}{"\n"}You've left the call 
+          </Text>
+          <Text
+            style={{
+              color: "white",
+              fontSize: 16,
+              padding: 8,
+              marginBottom: 8,
+            }}
+          >
+            Have a nice day!
+          </Text>
         </View>
       ) : (
         <>
@@ -135,20 +174,33 @@ const AudioView = ({ _height, editor }) => {
               }}
             >
               <ScrollView
-              style={{
-                padding: 16,
-                height: _height - 60,
-              }}>
-              <View
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  flexWrap: 'wrap',
-                }}>
-                {allParticipants}
-              </View>
-            </ScrollView>
+                  padding: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 16,
+                    padding: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  {participants.length}{" "}
+                  {participants.length === 1
+                    ? "person in call"
+                    : "people in call"}
+                </Text>
+                <View
+                  style={{
+                    flexWrap: "wrap",
+                    alignItems: "flex-start",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  {allParticipants}
+                </View>
+              </ScrollView>
               {/*Tray content*/}
               <View
                 style={{
@@ -196,7 +248,7 @@ const AudioView = ({ _height, editor }) => {
                         </View>
                       </>
                     ) : (
-                      <HandButton onClick={handleHandRaising}>
+                      <HandButton onPress={handleHandRaising}>
                         <ButtonText>
                           {local?.user_name.includes("✋")
                             ? "Lower hand"
@@ -231,48 +283,39 @@ AudioView.propTypes = {
   _height: PropTypes.number,
 };
 
-const Container = ({hidden, children}) => (
+const Container = ({ hidden, children }) => (
   <View
     style={{
-      display: hidden ? 'none' : 'flex',
-      height: hidden ? 0 : '100%',
-      flex: 1,
-      backgroundColor: '#131A24',
-    }}>
+      display: hidden ? "none" : "flex",
+      height: hidden ? 0 : "100%",
+      backgroundColor: "#131A24",
+    }}
+  >
     {children}
   </View>
 );
 
-const CombinedContainer = ({children}) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      paddingBottom: 32,
-      gap: 40,
-    }}>
-    {children}
-  </View>
-);
-const TrayContent = ({children}) => (
+const TrayContent = ({ children }) => (
   <View
     style={{
       padding: 4,
-      width: '100%',
+      width: "100%",
+      bottom: 0,
       height: 60,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }}>
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
     {children}
   </View>
 );
 
-const LeaveButton = ({onPress, title}) => (
+const LeaveButton = ({ onPress, title }) => (
   <TouchableOpacity
     onPress={onPress}
     style={{
-      backgroundColor: '#FF0000',
+      backgroundColor: "#FF0000",
       paddingHorizontal: 24,
       width: 150,
       height: 40,
@@ -280,45 +323,43 @@ const LeaveButton = ({onPress, title}) => (
       marginBottom: 10,
       paddingVertical: 8,
       borderRadius: 9999,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginLeft: 'auto',
-    }}>
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: "auto",
+    }}
+  >
     <Text
       style={{
-        fontWeight: 'bold',
-        color: 'white', // Text color
+        fontWeight: "bold",
+        color: "white", // Text color
         fontSize: 16,
-      }}>
+      }}
+    >
       {title}
     </Text>
   </TouchableOpacity>
 );
 
-const HandButton = ({onPress, children}) => (
+const HandButton = ({ onPress, children }) => (
   <TouchableOpacity
     onPress={onPress}
     style={{
-      paddingHorizontal: 24,
-      width: 150,
       height: 40,
       marginTop: 10,
       marginBottom: 10,
-      paddingVertical: 8,
-      borderRadius: 9999,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginLeft: 'auto',
-    }}>
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
     {children}
   </TouchableOpacity>
 );
 
-const AudioButton = ({onPress, children}) => (
+const AudioButton = ({ onPress, children }) => (
   <TouchableOpacity
     onPress={onPress}
     style={{
-      backgroundColor: '#333',
+      backgroundColor: "#333",
       paddingHorizontal: 8,
       paddingVertical: 8,
       width: 40,
@@ -326,29 +367,31 @@ const AudioButton = ({onPress, children}) => (
       marginTop: 10,
       paddingBottom: 4,
       borderRadius: 20,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
     {children}
   </TouchableOpacity>
 );
 
-const ButtonText = ({children, style}) => (
-  <Text style={{marginLeft: 4, fontSize: 16, color: 'white', ...style}}>
+const ButtonText = ({ children, style }) => (
+  <Text style={{ marginLeft: 4, fontSize: 16, color: "white", ...style }}>
     {children}
   </Text>
 );
 
-const ButtonCaptionText = ({children, style}) => (
+const ButtonCaptionText = ({ children, style }) => (
   <Text
     style={{
-      color: 'white',
+      color: "white",
       fontSize: 16,
       marginTop: 4,
       width: 60,
-      textAlign: 'center',
+      textAlign: "center",
       ...style,
-    }}>
+    }}
+  >
     {children}
   </Text>
 );
