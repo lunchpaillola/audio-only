@@ -1,9 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useCallState } from "../shared/callProvider";
-import {View, Text, TouchableOpacity} from 'react-native';
+import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
-import Menu from "../shared/Menu";
 import MoreIcon from "../icons/MoreIcon";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
@@ -17,7 +16,7 @@ const initials = (name) =>
         .join("")
     : "";
 
-const Participant = ({ participant, local, modCount }) => {
+const Participant = ({ participant, local, modCount, _height, _width }) => {
   const {
     getAccountType,
     activeSpeakerId,
@@ -34,10 +33,14 @@ const Participant = ({ participant, local, modCount }) => {
   const audioRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
 
-  let name
+  let name;
   const accountType = getAccountType(participant?.user_name);
 
-  if (accountType === MOD || accountType === SPEAKER || accountType === LISTENER){
+  if (
+    accountType === MOD ||
+    accountType === SPEAKER ||
+    accountType === LISTENER
+  ) {
     name = displayName(participant?.user_name);
   } else {
     name = participant?.user_name;
@@ -47,13 +50,12 @@ const Participant = ({ participant, local, modCount }) => {
     getAccountType(participant?.user_name) === MOD
       ? "Host"
       : getAccountType(participant?.user_name) === SPEAKER
-        ? "Speaker"
-        : getAccountType(participant?.user_name) === LISTENER
-          ? "Listener"
-          : "Listener";
-  
+      ? "Speaker"
+      : getAccountType(participant?.user_name) === LISTENER
+      ? "Listener"
+      : "Listener";
 
-    const menuOptions = useMemo(() => {
+  const menuOptions = useMemo(() => {
     const mutedText = participant?.audio ? "Mute" : "Unmute";
 
     const audioAction = participant?.audio
@@ -108,11 +110,11 @@ const Participant = ({ participant, local, modCount }) => {
         if (!participant?.local) {
           const o = [
             {
-              text: "Make moderator",
+              text: `Make ${name} moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: "Make listener",
+              text: `Make ${name} listener`,
               action: () => changeAccountType(participant, LISTENER),
             },
             {
@@ -137,11 +139,11 @@ const Participant = ({ participant, local, modCount }) => {
         } else {
           const o = [
             {
-              text: "Make moderator",
+              text: `Make ${name} moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: "Make speaker",
+              text: `Make ${name} speaker`,
               action: () => changeAccountType(participant, SPEAKER),
             },
             {
@@ -169,7 +171,7 @@ const Participant = ({ participant, local, modCount }) => {
         text: lastMod ? "End call" : "Leave call",
         action: () => (lastMod ? endCall() : leaveCall(participant)),
         warning: true,
-      })
+      });
     }
 
     return options;
@@ -229,12 +231,12 @@ const Participant = ({ participant, local, modCount }) => {
 
     const startPlayingTrack = () => {
       if (audioRef.current) {
-        audioRef.current.play().catch(error => {
+        audioRef.current.play().catch((error) => {
           console.error("Error trying to play audio:", error);
         });
-    }
+      }
     };
-  
+
     navigator.mediaDevices.addEventListener("devicechange", startPlayingTrack);
 
     return () => {
@@ -251,17 +253,15 @@ const Participant = ({ participant, local, modCount }) => {
   );
 
   return (
-    <View
-      style={[
-       participantStyles.container
-      ]}>
+    <View style={[participantStyles.container]}>
       <View
         style={[
-         participantStyles.avatar,
+          participantStyles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
             participantStyles.isActive,
-        ]}>
+        ]}
+      >
         <Text style={participantStyles.initials} numberOfLines={1}>
           {initials(participant?.user_name)}
         </Text>
@@ -278,17 +278,51 @@ const Participant = ({ participant, local, modCount }) => {
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
-        <TouchableOpacity
+        <Pressable
           style={participantStyles.menuButton}
-          onPress={() => setIsVisible(!isVisible)}>
+          onPress={() => setIsVisible(true)}
+        >
           <MoreIcon />
-        </TouchableOpacity>
+        </Pressable>
       )}
-      {isVisible && (
-        <View style={participantStyles.menuContainer}>
-          <Menu options={menuOptions} setIsVisible={setIsVisible} />
-        </View>
-      )}
+
+      <Modal
+        visible={isVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setIsVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsVisible(false)}
+        >
+          <View
+            style={[
+              styles.menu,
+            ]}
+          >
+            {menuOptions.map((option, index) => (
+              <Pressable
+                key={index}
+                style={styles.menuItem}
+                onPress={() => {
+                  option.action();
+                  setIsVisible(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.menuItemText,
+                    option.warning ? { color: "red" } : {},
+                  ]}
+                >
+                  {option.text}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
       {participant?.audioTrack && (
         <audio autoPlay id={`audio-${participant.user_id}`} ref={audioRef} />
       )}
@@ -296,3 +330,37 @@ const Participant = ({ participant, local, modCount }) => {
   );
 };
 export default Participant;
+
+const styles = StyleSheet.create({
+  anchor: {
+    backgroundColor: "#1f2d3d",
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    top: 44, // Adjusted for absolute positioning
+    right: 16, // Adjusted for absolute positioning
+    zIndex: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.10)",
+  },
+  menu: {
+    backgroundColor: "#1f2d3d",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    padding: 16,
+    minWidth: 175
+  },
+  menuItem: {
+    padding: 10,
+  },
+  menuItemText: {
+    color: "white",
+  },
+});

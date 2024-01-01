@@ -1,49 +1,42 @@
-/* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import theme from './theme'; // Ensure you have a similar theme setup for React Native
+import React, {useRef} from 'react';
+import {StyleSheet, Pressable, Text} from 'react-native';
+import {Menu, MenuItem} from 'react-native-material-menu';
+import theme from './theme';
+import {participantStyles} from './participantStyles';
+import MoreIcon from "../icons/MoreIcon";
 
-const Menu = ({options, setIsVisible}) => {
+const ActionMenu = ({options, setIsVisble}) => {
+  const menuRef = useRef(null);
+
   return (
-    <View style={styles.container}>
-      {(options || []).map((o, i) => (
-        <TouchableOpacity
+    <Menu
+      animationDuration={0}
+      visible={true}
+     >
+      {options.map((o, i) => (
+        <MenuItem
           key={i}
-          style={[styles.option, o.warning && styles.warning]}
           onPress={() => {
             o.action();
-            setIsVisible(false);
           }}>
           <Text
-            style={{
-              textAlign: 'center',
-              color: o.warning ? theme.colors.redDark : theme.colors.white,
-            }}>
+            style={[styles.text, o.warning && {color: theme.colors.redDark}]}>
             {o.text}
           </Text>
-        </TouchableOpacity>
+        </MenuItem>
       ))}
-    </View>
+    </Menu>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'column',
-    backgroundColor: '#1F2D3D',
-    paddingVertical: 8,
-    width: 128,
-    height: 204,
-  },
-  option: {
-    fontSize: 12,
-    textAlign: 'center',
-    lineHeight: 16,
-    padding: 8,
-  },
-  warning: {
-    // Define specific styles for warning state if needed
+  text: {
+    fontSize: theme.fontSize.large,
+    color: theme.colors.blueDark,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    flexWrap: 'nowrap',
   },
 });
 
-export default Menu;
+export default ActionMenu;

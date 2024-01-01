@@ -1,19 +1,12 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useMemo, useState} from 'react';
 import {DailyMediaView} from '@daily-co/react-native-daily-js';
-import {View, Text, TouchableOpacity, Platform} from 'react-native';
-import {
-  useCallState,
-  LISTENER,
-  MOD,
-  SPEAKER,
-} from '../shared/callProvider';
-import Menu from '../shared/Menu';
+import {View, Text, Modal, Pressable, Platform, StyleSheet} from 'react-native';
+import {useCallState, LISTENER, MOD, SPEAKER} from '../shared/callProvider';
 import MicIcon from '../icons/MicIcon';
 import MutedIcon from '../icons/MutedIcon';
 import MoreIcon from '../icons/MoreIcon';
-import { participantStyles } from "../shared/participantStyles";
-
+import {participantStyles} from '../shared/participantStyles';
 
 const initials = name =>
   name
@@ -205,7 +198,7 @@ const Participant = ({participant, local, modCount, zIndex}) => {
       ]}>
       <View
         style={[
-         participantStyles.avatar,
+          participantStyles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
             participantStyles.isActive,
@@ -226,17 +219,42 @@ const Participant = ({participant, local, modCount, zIndex}) => {
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
-        <TouchableOpacity
+        <Pressable
           style={participantStyles.menuButton}
-          onPress={() => setIsVisible(!isVisible)}>
+          onPress={() => setIsVisible(true)}>
           <MoreIcon />
-        </TouchableOpacity>
+        </Pressable>
       )}
-      {isVisible && (
-        <View style={participantStyles.menuContainer}>
-          <Menu options={menuOptions} setIsVisible={setIsVisible} />
-        </View>
-      )}
+
+      <Modal
+        visible={isVisible}
+        transparent={true}
+        animationType="none"
+        onRequestClose={() => setIsVisible(false)}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setIsVisible(false)}>
+          <View style={[styles.menu]}>
+            {menuOptions.map((option, index) => (
+              <Pressable
+                key={index}
+                style={styles.menuItem}
+                onPress={() => {
+                  option.action();
+                  setIsVisible(false);
+                }}>
+                <Text
+                  style={[
+                    styles.menuItemText,
+                    option.warning ? {color: 'red'} : {},
+                  ]}>
+                  {option.text}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
       {audioTrack && (
         <DailyMediaView
           id={`audio-${participant.user_id}`}
@@ -248,3 +266,37 @@ const Participant = ({participant, local, modCount, zIndex}) => {
   );
 };
 export default Participant;
+
+const styles = StyleSheet.create({
+  anchor: {
+    backgroundColor: '#1f2d3d',
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    top: 44, // Adjusted for absolute positioning
+    right: 16, // Adjusted for absolute positioning
+    zIndex: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.10)',
+  },
+  menu: {
+    backgroundColor: '#1f2d3d',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 16,
+    minWidth: 175,
+  },
+  menuItem: {
+    padding: 10,
+  },
+  menuItemText: {
+    color: 'white',
+  },
+});

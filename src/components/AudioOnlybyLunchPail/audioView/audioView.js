@@ -135,10 +135,6 @@ const AudioView = ({_height}) => {
     <>
       {/* this is just some buffer that won't exist in the actiual component*/}
       <View
-        style={{
-          height: 75,
-          backgroundColor: '#131A24',
-        }}
       />
       {view == PREJOIN ? (
         <View
