@@ -1,5 +1,5 @@
 {
-  "displayName": "audioOnlybyLunchPail",
+  "displayName": "Audio Only Chat",
   "defaultWidth": 600,
   "defaultHeight": 750,
   "component": "./index.js",
@@ -10,19 +10,20 @@
   "props": [
     {
       "name": "apiKey",
-      "displayName": "apiKey",
+      "displayName": "Daily API Key",
       "type": "text",
-      "default": ""
+      "default": "",
+      "helpText": "Sign up at [Daily](https://dashboard.daily.co/signup) for a free API key"
     },
     {
       "name": "url",
-      "displayName": "url",
+      "displayName": "Room URL",
       "type": "text",
       "default": ""
     },
     {
       "name": "owner",
-      "displayName": "owner",
+      "displayName": "Meeting Host",
       "type": "boolean",
       "default": "false"
     },
@@ -30,7 +31,42 @@
       "name": "userName",
       "displayName": "username",
       "type": "text",
-      "default": ""
+      "default": "",
+      "helpText": "Display name within the audio call"
+    },
+    {
+      "name": "profileImage",
+      "displayName": "Profile Image",
+      "type": "image",
+      "helpText": "Profile image that should be used within the audio call"
+    },
+    {
+      "name": "textColor",
+      "displayName": "Text Color",
+      "type": "color",
+      "default": "#ffffff",
+      "helpText": "Text color within the audio call"
+    },
+    {
+      "name": "backgroundColor",
+      "displayName": "Background Color",
+      "type": "color",
+      "default": "#131A24",
+      "helpText": "Background color within the audio call"
+    },
+    {
+      "name": "avatarColor",
+      "displayName": "Avatar Color",
+      "type": "color",
+      "default": "#2b3e56",
+      "helpText": "Avatar color within the audio call when the profile image is empty"
+    },
+    {
+      "name": "buttonIconColors",
+      "displayName": "Modal and Icon colors",
+      "type": "color",
+      "default": "#1f2d3d", 
+      "helpText": "Background colors for the show more and mute  icons as well as the menu modal"
     }
   ]
 }

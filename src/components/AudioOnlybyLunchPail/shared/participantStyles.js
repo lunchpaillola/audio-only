@@ -1,6 +1,37 @@
 import { StyleSheet } from 'react-native';
 
-export const participantStyles = StyleSheet.create({
+export const getParticipantStyles = (textColor, avatarColor, buttonIconColors) => StyleSheet.create({
+  anchor: {
+    backgroundColor: buttonIconColors,
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    top: 44, 
+    right: 16, 
+    zIndex: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.10)",
+  },
+  menuModal: {
+    backgroundColor: buttonIconColors,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    padding: 32,
+    minWidth: 175
+  },
+  menuItem: {
+    padding: 10,
+  },
+  menuItemText: {
+    color: textColor,
+  },
   container: {
     margin: 8,
     alignItems: 'flex-start',
@@ -11,11 +42,11 @@ export const participantStyles = StyleSheet.create({
 
   avatarText: {
     fontSize: 16,
-    color: '#fff',
+    color: textColor,
   },
   audioIcon: {
     position: 'absolute',
-    backgroundColor: '#1f2d3d',
+    backgroundColor: buttonIconColors,
     width: 32,
     height: 32,
     top: 72 - 28,
@@ -25,7 +56,7 @@ export const participantStyles = StyleSheet.create({
     borderRadius: 16,
   },
   menuButton: {
-    backgroundColor: '#1f2d3d',
+    backgroundColor: buttonIconColors,
     width: 32,
     height: 32,
     position: 'absolute',
@@ -34,7 +65,7 @@ export const participantStyles = StyleSheet.create({
     borderRadius: 16,
     top: 72 - 28,
     padding: 0,
-    right: 0,
+    right: -4,
   },
   menuContainer: {
     position: 'absolute',
@@ -46,19 +77,19 @@ export const participantStyles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 9999,
-    backgroundColor: '#2b3e56',
+    backgroundColor: avatarColor,
     alignItems: 'center',
     justifyContent: 'center',
   },
   name: {
-    color: '#fff',
+    color: textColor,
     marginVertical: 4,
     fontWeight: '400',
     paddingTop: 8,
     fontSize: 12,
     width: 72,
     textAlign: 'center',
-    lineHeight: 12,
+    lineHeight: 16,
   },
   role: {
     color: '#c8d1dc',
@@ -67,11 +98,11 @@ export const participantStyles = StyleSheet.create({
     fontSize: 12,
     width: 72,
     textAlign: 'center',
-    lineHeight: 12,
+    lineHeight: 16,
   },
   initials: {
     fontSize: 16,
-    color: '#fff',
+    color: textColor,
     lineHeight: 32,
   },
   isActive: {
@@ -79,10 +110,10 @@ export const participantStyles = StyleSheet.create({
     borderWidth: 2,
   },
   isMuted: {
-    backgroundColor: '#2b3e56',
+    backgroundColor: avatarColor,
   },
   showMore: {
-    backgroundColor: "white",
+    backgroundColor: textColor,
     padding: 4,
     borderRadius: 24,
     position: 'absolute',
@@ -93,7 +124,7 @@ export const participantStyles = StyleSheet.create({
     position: 'absolute',
     top: 72 - 28,
     right: -4,
-    backgroundColor: "#1f2d3d",
+    backgroundColor: buttonIconColors,
     padding: 4,
     borderRadius: 16,
     shadowOffset: {

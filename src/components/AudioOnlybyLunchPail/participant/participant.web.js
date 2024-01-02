@@ -1,12 +1,12 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useCallState } from "../shared/callProvider";
-import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
+import { View, Text, Modal, Pressable, Image } from "react-native";
 import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
 import MoreIcon from "../icons/MoreIcon";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
-import { participantStyles } from "../shared/participantStyles";
+import { getParticipantStyles } from "../shared/participantStyles";
 
 const initials = (name) =>
   name
@@ -16,7 +16,7 @@ const initials = (name) =>
         .join("")
     : "";
 
-const Participant = ({ participant, local, modCount, _height, _width }) => {
+const Participant = ({ participant, local, modCount, textColor, avatarColor, buttonIconColors }) => {
   const {
     getAccountType,
     activeSpeakerId,
@@ -31,6 +31,9 @@ const Participant = ({ participant, local, modCount, _height, _width }) => {
     endCall,
   } = useCallState();
   const audioRef = useRef(null);
+  const styles = getParticipantStyles(textColor, avatarColor, buttonIconColors);
+  const profileImage = participant?.userData?.profileImage
+
   const [isVisible, setIsVisible] = useState(false);
 
   let name;
@@ -253,33 +256,40 @@ const Participant = ({ participant, local, modCount, _height, _width }) => {
   );
 
   return (
-    <View style={[participantStyles.container]}>
+    <View style={[styles.container]}>
       <View
         style={[
-          participantStyles.avatar,
+          styles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
-            participantStyles.isActive,
+            styles.isActive,
         ]}
       >
-        <Text style={participantStyles.initials} numberOfLines={1}>
+         {profileImage ? (
+          <Image
+            source={{ uri: participant?.userData?.profileImage }}
+            style={{  width: 72,height: 72,borderRadius: 999, }}
+          />
+        ) : (
+          <Text style={styles.initials} numberOfLines={1}>
           {initials(participant?.user_name)}
         </Text>
+        )}
       </View>
       {getAccountType(participant?.user_name) !== LISTENER && (
-        <View style={participantStyles.audioIcon}>
+        <View style={styles.audioIcon}>
           {participant?.audio ? <MicIcon /> : <MutedIcon />}
         </View>
       )}
-      <Text style={participantStyles.name} numberOfLines={1}>
+      <Text style={styles.name} numberOfLines={1}>
         {name}
       </Text>
-      <Text style={participantStyles.role} numberOfLines={1}>
+      <Text style={styles.role} numberOfLines={1}>
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
         <Pressable
-          style={participantStyles.menuButton}
+          style={styles.menuButton}
           onPress={() => setIsVisible(true)}
         >
           <MoreIcon />
@@ -298,7 +308,7 @@ const Participant = ({ participant, local, modCount, _height, _width }) => {
         >
           <View
             style={[
-              styles.menu,
+              styles.menuModal,
             ]}
           >
             {menuOptions.map((option, index) => (
@@ -313,7 +323,7 @@ const Participant = ({ participant, local, modCount, _height, _width }) => {
                 <Text
                   style={[
                     styles.menuItemText,
-                    option.warning ? { color: "red" } : {},
+                    option.warning ? { color: "#FF0000" } : {},
                   ]}
                 >
                   {option.text}
@@ -330,37 +340,3 @@ const Participant = ({ participant, local, modCount, _height, _width }) => {
   );
 };
 export default Participant;
-
-const styles = StyleSheet.create({
-  anchor: {
-    backgroundColor: "#1f2d3d",
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    top: 44, // Adjusted for absolute positioning
-    right: 16, // Adjusted for absolute positioning
-    zIndex: 15,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.10)",
-  },
-  menu: {
-    backgroundColor: "#1f2d3d",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    padding: 16,
-    minWidth: 175
-  },
-  menuItem: {
-    padding: 10,
-  },
-  menuItemText: {
-    color: "white",
-  },
-});

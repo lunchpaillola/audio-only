@@ -9,11 +9,13 @@ import {
 import PropTypes from "prop-types";
 
 
-const EditorView = ({_height}) => {
+const EditorView = ({_height, buttonIconColors,   textColor,
+	backgroundColor,
+	avatarColor, }) => {
 
 			return (
 					<View
-							style={{ backgroundColor: "#131A24", height: _height, color: "white" }}
+							style={{ backgroundColor: backgroundColor, height: "100%", color: textColor }}
 					>
 							<View
 									style={{
@@ -31,7 +33,7 @@ const EditorView = ({_height}) => {
 													gap: 4,
 											}}
 									>
-											{Array.from({ length: 21 }, (_, index) => (
+											{Array.from({ length: 12 }, (_, index) => (
 													<View
 															key={index}
 															style={{
@@ -46,7 +48,7 @@ const EditorView = ({_height}) => {
 															<View style={{ position: "relative" }}>
 																	<View
 																			style={{
-																					backgroundColor: "#2B3E56",
+																					backgroundColor: avatarColor,
 																					borderRadius: 50,
 																					width: 64,
 																					height: 64,
@@ -59,7 +61,7 @@ const EditorView = ({_height}) => {
 																			<Text
 																					style={{
 																							fontSize: 24,
-																							color: "#FFF",
+																							color: textColor,
 																							// Additional styling for the text to be properly aligned and styled
 																					}}
 																			>
@@ -88,10 +90,10 @@ const EditorView = ({_height}) => {
 																	</View>
 															</View>
 															<View style={{ alignItems: "center" }}>
-																	<Text style={{ fontSize: 12, color: "#fff" }}>
+																	<Text style={{ fontSize: 12, color: textColor }}>
 																			{index % 3 === 0 ? "JT" : index % 3 === 1 ? "Sara" : "Billie"}
 																	</Text>
-																	<Text style={{ fontSize: 12, color: "#fff" }}>
+																	<Text style={{ fontSize: 12, color: textColor }}>
 																			{index % 3 === 0 ? "Host" : "Speaker"}
 																	</Text>
 															</View>
@@ -109,7 +111,7 @@ const EditorView = ({_height}) => {
 											marginBottom: 32,
 											paddingTop: 32,
 											borderTopColor: "#333",
-											backgroundColor: "#131A24",
+											backgroundColor: backgroundColor,
 									}}
 							>
 									<View
@@ -120,7 +122,7 @@ const EditorView = ({_height}) => {
 													flexDirection: "row",
 													alignItems: "center",
 													paddingHorizontal: 16,
-													backgroundColor: "#131A24",
+													backgroundColor: backgroundColor,
 											}}
 									>
 											<View
@@ -133,12 +135,12 @@ const EditorView = ({_height}) => {
 											></View>
 											<TouchableOpacity
 													style={{
-															backgroundColor: "#FF0000", // Button background color
-															paddingHorizontal: 24, // Horizontal padding
-															paddingVertical: 8, // Vertical padding
-															borderRadius: 9999, // Fully rounded corners
-															alignItems: "center", // Center children horizontally
-															justifyContent: "center", // Center children vertically
+															backgroundColor: "#FF0000", 
+															paddingHorizontal: 24, 
+															paddingVertical: 8, 
+															borderRadius: 9999, 
+															alignItems: "center", 
+															justifyContent: "center", 
 													}}
 													onPress={() => {
 															// Handle button press
@@ -147,7 +149,7 @@ const EditorView = ({_height}) => {
 													<Text
 															style={{
 																	fontWeight: "bold",
-																	color: "white", // Text color, not fontColor
+																	color: textColor, 
 																	fontSize: 16,
 															}}
 													>

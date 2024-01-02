@@ -25,6 +25,7 @@ export const CallProvider = ({
  url,
  owner,
  apikey,
+ profileImage,
 }) => {
  const [view, setView] = useState(PREJOIN); 
  const [callFrame, setCallFrame] = useState(null);
@@ -90,7 +91,6 @@ export const CallProvider = ({
  };
 
  const joinRoom = async (isModerator) => {
-  console.log('makingMod', isModerator);
    try {
      if (callFrame) {
        await callFrame.leave();
@@ -115,11 +115,9 @@ export const CallProvider = ({
        userName,
      };
      if (roomInfo.token) {
-      console.log('roominfo', roominf.token);
        options.token = roomInfo?.token;
      }
      if (newToken) {
-      console.log('a new token', newToken);
        options.token = newToken;
      }
 
@@ -127,6 +125,11 @@ export const CallProvider = ({
      setError(false);
      setCallFrame(call);
      call.setLocalAudio(false);
+     if (profileImage) {
+      call.setUserData({
+        profileImage: profileImage?.uri,
+      });
+    }
 
      setView(INCALL);
    } catch (err) {
@@ -146,28 +149,20 @@ export const CallProvider = ({
 
  const handleParticipantJoinedOrUpdated = evt => {
    setUpdateParticipants(`updated-${evt?.participant?.user_id}-${Date.now()}`);
-   console.log('[PARTICIPANT JOINED/UPDATED]', evt.participant);
  };
  const handleParticipantLeft = evt => {
    setUpdateParticipants(`left-${evt?.participant?.user_id}-${Date.now()}`);
-   console.log('[PARTICIPANT LEFT]', evt);
  };
  const handleActiveSpeakerChange = evt => {
-   console.log('[ACTIVE SPEAKER CHANGE]', evt);
    setActiveSpeakerId(evt?.activeSpeaker?.peerId);
  };
 
  const playTrack = evt => {
-   console.log(
-     '[TRACK STARTED]',
-     evt.participant && evt.participant.session_id,
-   );
    setUpdateParticipants(
      `track-started-${evt?.participant?.user_id}-${Date.now()}`,
    );
  };
  const destroyTrack = evt => {
-   console.log('[DESTROY TRACK]', evt);
    setUpdateParticipants(
      `track-stopped-${evt?.participant?.user_id}-${Date.now()}`,
    );
@@ -188,7 +183,6 @@ export const CallProvider = ({
      if (!callFrame) {
        return;
      }
-     console.log('[EJECTING PARTICIPANT]', participant?.user_id);
      callFrame.sendAppMessage({msg: FORCE_EJECT}, participant?.session_id);
      setUpdateParticipants(
        `eject-participant-${participant?.user_id}-${Date.now()}`,
@@ -230,7 +224,6 @@ export const CallProvider = ({
      if (!callFrame) {
        return;
      }
-     console.log('[MUTING]');
 
      if (p?.user_id === 'local') {
        callFrame.setLocalAudio(false);
@@ -248,7 +241,6 @@ export const CallProvider = ({
      if (!callFrame) {
        return;
      }
-     console.log('UNMUTING');
 
      if (p?.user_id === 'local') {
        callFrame.setLocalAudio(true);
@@ -266,7 +258,6 @@ export const CallProvider = ({
      if (!callFrame) {
        return;
      }
-     console.log('RAISING HAND');
      callFrame.setUserName(`✋ ${p?.user_name}`);
      setUpdateParticipants(`raising-hand-${p?.user_id}-${Date.now()}`);
    },
@@ -277,7 +268,6 @@ export const CallProvider = ({
      if (!callFrame) {
        return;
      }
-     console.log('UNRAISING HAND');
      const split = p?.user_name.split('✋ ');
      const username = split.length === 2 ? split[1] : split[0];
      callFrame.setUserName(username);
@@ -317,7 +307,6 @@ export const CallProvider = ({
          ? MSG_MAKE_SPEAKER
          : MSG_MAKE_LISTENER;
 
-     console.log('[UPDATING ACCOUNT TYPE]');
      if (msg === MSG_MAKE_LISTENER) {
        handleMute(participant);
      }
@@ -331,16 +320,13 @@ export const CallProvider = ({
 
  useEffect(() => {
    const handleAppMessage = async evt => {
-     console.log('[APP MESSAGE]', evt);
      try {
        let userName;
        let isModerator;
        switch (evt.data.msg) {
          case MSG_MAKE_MODERATOR:
-           console.log('[LEAVING]');
            await callFrame.leave();
            await callFrame.destroy();
-           console.log('[REJOINING AS MOD]');
            userName = evt?.data?.userName;
            isModerator=true;
            if (userName?.includes('✋')) {
@@ -368,7 +354,6 @@ export const CallProvider = ({
    };
 
    const showError = e => {
-     console.log('[ERROR]');
      console.warn(e);
    };
 

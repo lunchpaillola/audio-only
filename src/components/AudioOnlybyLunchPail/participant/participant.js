@@ -1,22 +1,32 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useMemo, useState} from 'react';
-import {DailyMediaView} from '@daily-co/react-native-daily-js';
-import {View, Text, Modal, Pressable, Platform, StyleSheet} from 'react-native';
-import {useCallState, LISTENER, MOD, SPEAKER} from '../shared/callProvider';
-import MicIcon from '../icons/MicIcon';
-import MutedIcon from '../icons/MutedIcon';
-import MoreIcon from '../icons/MoreIcon';
-import {participantStyles} from '../shared/participantStyles';
+import React, { useState, useMemo } from "react";
+import { useCallState } from "../shared/callProvider";
+import { DailyMediaView } from "@daily-co/react-native-daily-js";
+import { View, Text, Modal, Pressable, Platform, Image } from "react-native";
+import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
+import MoreIcon from "../icons/MoreIcon";
+import MicIcon from "../icons/MicIcon";
+import MutedIcon from "../icons/MutedIcon";
+import { getParticipantStyles } from "../shared/participantStyles";
 
-const initials = name =>
+const initials = (name) =>
   name
     ? name
-        .split(' ')
-        .map(n => n.charAt(0))
-        .join('')
-    : '';
+        .split(" ")
+        .map((n) => n.charAt(0))
+        .join("")
+    : "";
 
-const Participant = ({participant, local, modCount, zIndex}) => {
+const Participant = ({
+  participant,
+  local,
+  modCount,
+  zIndex,
+  textColor,
+  avatarColor,
+  buttonIconColors,
+}) => {
   const {
     getAccountType,
     activeSpeakerId,
@@ -31,24 +41,26 @@ const Participant = ({participant, local, modCount, zIndex}) => {
     endCall,
   } = useCallState();
   const [isVisible, setIsVisible] = useState(false);
+  const styles = getParticipantStyles(textColor, avatarColor, buttonIconColors);
+  const profileImage = participant?.userData?.profileImage;
 
   const name = displayName(participant?.user_name);
   //Translating the role for the user to the
   const role =
     getAccountType(participant?.user_name) === MOD
-      ? 'Host'
+      ? "Host"
       : getAccountType(participant?.user_name) === SPEAKER
-      ? 'Speaker'
+      ? "Speaker"
       : getAccountType(participant?.user_name) === LISTENER
-      ? 'Listener'
-      : 'Listener';
+      ? "Listener"
+      : "Listener";
 
   const menuOptions = useMemo(() => {
-    const mutedText = participant?.audio ? 'Mute' : 'Unmute';
+    const mutedText = participant?.audio ? "Mute" : "Unmute";
 
     const audioAction = participant?.audio
-      ? id => handleMute(id)
-      : id => handleUnmute(id);
+      ? (id) => handleMute(id)
+      : (id) => handleUnmute(id);
 
     /**
      * Determine what the menu options are based on the account type.
@@ -88,7 +100,7 @@ const Participant = ({participant, local, modCount, zIndex}) => {
       [MOD, SPEAKER].includes(getAccountType(participant?.user_name))
     ) {
       options.push({
-        text: 'Mute',
+        text: "Mute",
         action: () => handleMute(participant),
       });
     }
@@ -98,15 +110,15 @@ const Participant = ({participant, local, modCount, zIndex}) => {
         if (!participant?.local) {
           const o = [
             {
-              text: 'Make moderator',
+              text: `Make ${name}  moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: 'Make listener',
+              text: `Make ${name} listener`,
               action: () => changeAccountType(participant, LISTENER),
             },
             {
-              text: 'Remove from call',
+              text: "Remove from call",
               action: () => removeFromCall(participant),
               warning: true,
             },
@@ -117,25 +129,25 @@ const Participant = ({participant, local, modCount, zIndex}) => {
       case LISTENER:
         if (participant?.local) {
           options.push({
-            text: participant?.user_name.includes('✋')
-              ? 'Lower hand'
-              : 'Raise hand ✋',
-            action: participant?.user_name.includes('✋')
+            text: participant?.user_name.includes("✋")
+              ? "Lower hand"
+              : "Raise hand ✋",
+            action: participant?.user_name.includes("✋")
               ? () => lowerHand(participant)
               : () => raiseHand(participant),
           });
         } else {
           const o = [
             {
-              text: 'Make moderator',
+              text: `Make ${name} moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: 'Make speaker',
+              text: `Make ${name} speaker`,
               action: () => changeAccountType(participant, SPEAKER),
             },
             {
-              text: 'Remove from call',
+              text: "Remove from call",
               action: () => removeFromCall(participant),
               warning: true,
             },
@@ -156,7 +168,7 @@ const Participant = ({participant, local, modCount, zIndex}) => {
       const lastMod =
         modCount < 2 && getAccountType(participant?.user_name) === MOD;
       options.push({
-        text: lastMod ? 'End call' : 'Leave call',
+        text: lastMod ? "End call" : "Leave call",
         action: () => (lastMod ? endCall() : leaveCall(participant)),
         warning: true,
       });
@@ -184,44 +196,46 @@ const Participant = ({participant, local, modCount, zIndex}) => {
 
   const audioTrack = useMemo(
     () =>
-      participant?.tracks?.audio?.state === 'playable'
+      participant?.tracks?.audio?.state === "playable"
         ? participant?.tracks?.audio?.track
         : null,
-    [participant?.tracks?.audio?.state, participant?.tracks?.audio?.track],
+    [participant?.tracks?.audio?.state, participant?.tracks?.audio?.track]
   );
 
   return (
-    <View
-      style={[
-        participantStyles.container,
-        {zIndex, elevation: Platform.OS === 'android' ? zIndex : 0},
-      ]}>
+    <View style={styles.container}>
       <View
         style={[
-          participantStyles.avatar,
+          styles.avatar,
           activeSpeakerId === participant?.user_id &&
             participant?.audio &&
-            participantStyles.isActive,
-        ]}>
-        <Text style={participantStyles.initials} numberOfLines={1}>
-          {initials(participant?.user_name)}
-        </Text>
+            styles.isActive,
+        ]}
+      >
+        {profileImage ? (
+          <Image
+            source={{ uri: participant?.userData?.profileImage }}
+            style={{ width: 72, height: 72, borderRadius: 999 }}
+          />
+        ) : (
+          <Text style={styles.initials} numberOfLines={1}>
+            {initials(participant?.user_name)}
+          </Text>
+        )}
       </View>
       {getAccountType(participant?.user_name) !== LISTENER && (
-        <View style={participantStyles.audioIcon}>
+        <View style={styles.audioIcon}>
           {participant?.audio ? <MicIcon /> : <MutedIcon />}
         </View>
       )}
-      <Text style={participantStyles.name} numberOfLines={1}>
+      <Text style={styles.name} numberOfLines={1}>
         {name}
       </Text>
-      <Text style={participantStyles.role} numberOfLines={1}>
+      <Text style={styles.role} numberOfLines={1}>
         {role}
       </Text>
       {showMoreMenu && menuOptions.length > 0 && (
-        <Pressable
-          style={participantStyles.menuButton}
-          onPress={() => setIsVisible(true)}>
+        <Pressable style={styles.menuButton} onPress={() => setIsVisible(true)}>
           <MoreIcon />
         </Pressable>
       )}
@@ -230,11 +244,13 @@ const Participant = ({participant, local, modCount, zIndex}) => {
         visible={isVisible}
         transparent={true}
         animationType="none"
-        onRequestClose={() => setIsVisible(false)}>
+        onRequestClose={() => setIsVisible(false)}
+      >
         <Pressable
           style={styles.modalOverlay}
-          onPress={() => setIsVisible(false)}>
-          <View style={[styles.menu]}>
+          onPress={() => setIsVisible(false)}
+        >
+          <View style={[styles.menuModal]}>
             {menuOptions.map((option, index) => (
               <Pressable
                 key={index}
@@ -242,12 +258,14 @@ const Participant = ({participant, local, modCount, zIndex}) => {
                 onPress={() => {
                   option.action();
                   setIsVisible(false);
-                }}>
+                }}
+              >
                 <Text
                   style={[
                     styles.menuItemText,
-                    option.warning ? {color: 'red'} : {},
-                  ]}>
+                    option.warning ? { color:"#FF0000" } : {},
+                  ]}
+                >
                   {option.text}
                 </Text>
               </Pressable>
@@ -266,37 +284,3 @@ const Participant = ({participant, local, modCount, zIndex}) => {
   );
 };
 export default Participant;
-
-const styles = StyleSheet.create({
-  anchor: {
-    backgroundColor: '#1f2d3d',
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
-    top: 44, // Adjusted for absolute positioning
-    right: 16, // Adjusted for absolute positioning
-    zIndex: 15,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.10)',
-  },
-  menu: {
-    backgroundColor: '#1f2d3d',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
-    padding: 16,
-    minWidth: 175,
-  },
-  menuItem: {
-    padding: 10,
-  },
-  menuItemText: {
-    color: 'white',
-  },
-});

@@ -16,7 +16,7 @@ import MicIcon from '../icons/MicIcon';
 import MutedIcon from '../icons/MutedIcon';
 import Participant from '../participant/participant';
 
-const AudioView = ({_height}) => {
+const AudioView = ({_height, textColor, backgroundColor, avatarColor, buttonIconColors}) => {
   const {
     getAccountType,
     handleMute,
@@ -50,7 +50,6 @@ const AudioView = ({_height}) => {
   const getParticipantKey = useCallback(
     participant => {
       const accountType = getAccountType(participant?.user_name);
-      console.log('LOLALOG running getParticpantKEY');
       if (accountType === MOD) {
         return `speaking-${participant.user_id}`;
       } else if (accountType === SPEAKER) {
@@ -114,6 +113,9 @@ const AudioView = ({_height}) => {
             local={local}
             modCount={mods?.length}
             zIndex={3}
+            textColor={textColor}
+            avatarColor={avatarColor}
+            buttonIconColors={buttonIconColors}
           />
         ))}
       </View>
@@ -133,18 +135,16 @@ const AudioView = ({_height}) => {
 
   return (
     <>
-      {/* this is just some buffer that won't exist in the actiual component*/}
-      <View
-      />
+      <View />
       {view == PREJOIN ? (
         <View
           style={{
             height: _height,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#131A24',
+            backgroundColor: backgroundColor,
           }}>
-          <ActivityIndicator size="large" color="#ffff" />
+          <ActivityIndicator size="large" color={textColor} />
         </View>
       ) : view == LEAVESCREEN ? (
         <View
@@ -153,20 +153,21 @@ const AudioView = ({_height}) => {
             justifyContent: 'center',
             alignItems: 'center',
             alignContent: 'center',
-            backgroundColor: '#131A24',
+            backgroundColor: backgroundColor,
           }}>
           <Text
             style={{
-              color: 'white',
+              color: textColor,
               fontSize: 24,
               fontWeight: 'bold',
               textAlign: 'center',
             }}>
-            👋{'\n'}{'\n'}You've left the call
+            👋{'\n'}
+            {'\n'}You've left the call
           </Text>
           <Text
             style={{
-              color: 'white',
+              color: textColor,
               fontSize: 16,
               padding: 8,
               marginBottom: 8,
@@ -178,8 +179,9 @@ const AudioView = ({_height}) => {
         <Container hidden={view !== INCALL}>
           <View
             style={{
-              backgroundColor: '#131A24',
+              backgroundColor: backgroundColor,
               height: _height,
+              color: textColor,
             }}>
             <ScrollView
               style={{
@@ -187,7 +189,7 @@ const AudioView = ({_height}) => {
               }}>
               <Text
                 style={{
-                  color: 'white',
+                  color: textColor,
                   fontSize: 16,
                   padding: 8,
                   marginBottom: 8,
@@ -218,7 +220,7 @@ const AudioView = ({_height}) => {
                 marginBottom: 32,
                 paddingTop: 32,
                 borderTopColor: '#333',
-                backgroundColor: '#131A24',
+                backgroundColor: backgroundColor,
               }}>
               <View
                 style={{
@@ -227,7 +229,7 @@ const AudioView = ({_height}) => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   paddingHorizontal: 16,
-                  backgroundColor: '#131A24',
+                  backgroundColor: backgroundColor,
                 }}>
                 <TrayContent>
                   {[MOD, SPEAKER].includes(getAccountType(local?.user_name)) ? (
@@ -241,14 +243,14 @@ const AudioView = ({_height}) => {
                         <AudioButton onPress={handleAudioChange}>
                           {local?.audio ? <MicIcon /> : <MutedIcon />}
                         </AudioButton>
-                        <ButtonCaptionText>
+                        <ButtonCaptionText textColor={textColor}>
                           {local?.audio ? 'Mute' : 'Unmute'}
                         </ButtonCaptionText>
                       </View>
                     </>
                   ) : (
                     <HandButton onPress={handleHandRaising}>
-                      <ButtonText>
+                      <ButtonText textColor={textColor}>
                         {local?.user_name.includes('✋')
                           ? 'Lower hand'
                           : 'Raise hand ✋'}
@@ -257,9 +259,17 @@ const AudioView = ({_height}) => {
                   )}
                   {mods?.length < 2 &&
                   getAccountType(local?.user_name) === MOD ? (
-                    <LeaveButton onPress={endCall} title="End Call" />
+                    <LeaveButton
+                      onPress={endCall}
+                      textColor={textColor}
+                      title="End Call"
+                    />
                   ) : (
-                    <LeaveButton onPress={leaveCall} title="Leave" />
+                    <LeaveButton
+                      onPress={leaveCall}
+                      textColor={textColor}
+                      title="Leave"
+                    />
                   )}
                 </TrayContent>
               </View>
@@ -275,12 +285,12 @@ AudioView.propTypes = {
   editor: PropTypes.bool,
   _height: PropTypes.number,
 };
-const Container = ({hidden, children}) => (
+const Container = ({hidden, children, backgroundColor}) => (
   <View
     style={{
       display: hidden ? 'none' : 'flex',
       height: hidden ? 0 : '100%',
-      backgroundColor: '#131A24',
+      backgroundColor: backgroundColor,
     }}>
     {children}
   </View>
@@ -301,7 +311,7 @@ const TrayContent = ({children}) => (
   </View>
 );
 
-const LeaveButton = ({onPress, title}) => (
+const LeaveButton = ({onPress, title, textColor}) => (
   <TouchableOpacity
     onPress={onPress}
     style={{
@@ -320,7 +330,7 @@ const LeaveButton = ({onPress, title}) => (
     <Text
       style={{
         fontWeight: 'bold',
-        color: 'white', // Text color
+        color: textColor,
         fontSize: 16,
       }}>
       {title}
@@ -361,16 +371,16 @@ const AudioButton = ({onPress, children}) => (
   </TouchableOpacity>
 );
 
-const ButtonText = ({children, style}) => (
-  <Text style={{marginLeft: 4, fontSize: 16, color: 'white', ...style}}>
+const ButtonText = ({children, style, textColor}) => (
+  <Text style={{marginLeft: 4, fontSize: 16, color: textColor, ...style}}>
     {children}
   </Text>
 );
 
-const ButtonCaptionText = ({children, style}) => (
+const ButtonCaptionText = ({children, style, textColor}) => (
   <Text
     style={{
-      color: 'white',
+      color: textColor,
       fontSize: 16,
       marginTop: 4,
       width: 60,
@@ -380,5 +390,4 @@ const ButtonCaptionText = ({children, style}) => (
     {children}
   </Text>
 );
-
 export default AudioView;

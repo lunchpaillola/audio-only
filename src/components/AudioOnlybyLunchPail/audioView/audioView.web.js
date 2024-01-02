@@ -13,10 +13,9 @@ import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
 import MicIcon from "../icons/MicIcon";
 import MutedIcon from "../icons/MutedIcon";
 import Audio from "./Audio";
-import EditorView from "../editor";
 import { ActivityIndicator } from "react-native";
 
-const AudioView = ({ _height, editor }) => {
+const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, buttonIconColors }) => {
   const {
     getAccountType,
     handleMute,
@@ -30,9 +29,6 @@ const AudioView = ({ _height, editor }) => {
     view,
   } = useCallState();
 
-  if (editor) {
-    return <EditorView _height={_height}></EditorView>;
-  }
 
   //Join room when theview is PreJOin
   useEffect(() => {
@@ -101,6 +97,9 @@ const AudioView = ({ _height, editor }) => {
             key={getParticipantKey(p)}
             local={local}
             modCount={mods?.length}
+            textColor={textColor}
+            avatarColor={avatarColor}
+            buttonIconColors={buttonIconColors}
           />
         ))}
       </View>
@@ -119,18 +118,16 @@ const AudioView = ({ _height, editor }) => {
 
   return (
     <>
-      {editor ? (
-        <EditorView _height={_height}></EditorView>
-      ) : view == PREJOIN ? (
+      {view == PREJOIN ? (
         <View
           style={{
             height: _height,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: '#131A24',
+            backgroundColor: backgroundColor,
           }}
         >
-          <ActivityIndicator size="large" color="#ffff" />
+          <ActivityIndicator size="large" color={textColor} />
         </View>
       ) : view == LEAVESCREEN ? (
         <View
@@ -139,12 +136,12 @@ const AudioView = ({ _height, editor }) => {
             justifyContent: "center",
             alignItems: "center",
             alignContent: "center",
-            backgroundColor: '#131A24',
+            backgroundColor: backgroundColor,
           }}
         >
           <Text
             style={{
-              color: "white",
+              color: textColor,
               fontSize: 24,
               fontWeight: "bold",
               textAlign: "center",
@@ -154,7 +151,7 @@ const AudioView = ({ _height, editor }) => {
           </Text>
           <Text
             style={{
-              color: "white",
+              color: textColor,
               fontSize: 16,
               padding: 8,
               marginBottom: 8,
@@ -165,12 +162,12 @@ const AudioView = ({ _height, editor }) => {
         </View>
       ) : (
         <>
-          <Container hidden={view !== INCALL}>
+          <Container hidden={view !== INCALL} backgroundColor={backgroundColor}>
             <View
               style={{
-                backgroundColor: "#131A24",
+                backgroundColor: backgroundColor,
                 height: _height,
-                color: "white",
+                color: textColor,
               }}
             >
               <ScrollView
@@ -180,7 +177,7 @@ const AudioView = ({ _height, editor }) => {
               >
                 <Text
                   style={{
-                    color: "white",
+                    color: textColor,
                     fontSize: 16,
                     padding: 8,
                     marginBottom: 8,
@@ -212,7 +209,7 @@ const AudioView = ({ _height, editor }) => {
                   marginBottom: 32,
                   paddingTop: 32,
                   borderTopColor: "#333",
-                  backgroundColor: "#131A24",
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <View
@@ -223,7 +220,7 @@ const AudioView = ({ _height, editor }) => {
                     flexDirection: "row",
                     alignItems: "center",
                     paddingHorizontal: 16,
-                    backgroundColor: "#131A24",
+                    backgroundColor: backgroundColor,
                   }}
                 >
                   <TrayContent>
@@ -242,14 +239,14 @@ const AudioView = ({ _height, editor }) => {
                           <AudioButton onPress={handleAudioChange}>
                             {local?.audio ? <MicIcon /> : <MutedIcon />}
                           </AudioButton>
-                          <ButtonCaptionText>
+                          <ButtonCaptionText textColor={textColor}>
                             {local?.audio ? "Mute" : "Unmute"}
                           </ButtonCaptionText>
                         </View>
                       </>
                     ) : (
                       <HandButton onPress={handleHandRaising}>
-                        <ButtonText>
+                        <ButtonText textColor={textColor}>
                           {local?.user_name.includes("✋")
                             ? "Lower hand"
                             : "Raise hand ✋"}
@@ -258,11 +255,11 @@ const AudioView = ({ _height, editor }) => {
                     )}
                     {mods?.length < 2 &&
                     getAccountType(local?.user_name) === MOD ? (
-                      <LeaveButton onPress={endCall} title="End Call">
+                      <LeaveButton onPress={endCall} title="End Call" textColor={textColor}>
                         End call
                       </LeaveButton>
                     ) : (
-                      <LeaveButton onPress={leaveCall} title="Leave">
+                      <LeaveButton onPress={leaveCall}  textColor={textColor} title="Leave">
                         Leave
                       </LeaveButton>
                     )}
@@ -283,12 +280,12 @@ AudioView.propTypes = {
   _height: PropTypes.number,
 };
 
-const Container = ({ hidden, children }) => (
+const Container = ({ hidden, children, backgroundColor }) => (
   <View
     style={{
       display: hidden ? "none" : "flex",
       height: hidden ? 0 : "100%",
-      backgroundColor: "#131A24",
+      backgroundColor: backgroundColor,
     }}
   >
     {children}
@@ -311,7 +308,7 @@ const TrayContent = ({ children }) => (
   </View>
 );
 
-const LeaveButton = ({ onPress, title }) => (
+const LeaveButton = ({ onPress, title, textColor }) => (
   <TouchableOpacity
     onPress={onPress}
     style={{
@@ -331,7 +328,7 @@ const LeaveButton = ({ onPress, title }) => (
     <Text
       style={{
         fontWeight: "bold",
-        color: "white", // Text color
+        color: textColor, 
         fontSize: 16,
       }}
     >
@@ -375,16 +372,16 @@ const AudioButton = ({ onPress, children }) => (
   </TouchableOpacity>
 );
 
-const ButtonText = ({ children, style }) => (
-  <Text style={{ marginLeft: 4, fontSize: 16, color: "white", ...style }}>
+const ButtonText = ({ children, style, textColor }) => (
+  <Text style={{ marginLeft: 4, fontSize: 16, color: textColor, ...style }}>
     {children}
   </Text>
 );
 
-const ButtonCaptionText = ({ children, style }) => (
+const ButtonCaptionText = ({ children, style, textColor }) => (
   <Text
     style={{
-      color: "white",
+      color: textColor,
       fontSize: 16,
       marginTop: 4,
       width: 60,
