@@ -17,7 +17,8 @@ const AudioOnlybyLunchPail = (props) => {
     textColor,
     backgroundColor,
     avatarColor,
-    buttonIconColors
+    buttonIconColors,
+    callEnded
   } = props;
 
   const [currentUrl, setCurrentUrl] = useState(null);
@@ -57,6 +58,7 @@ const AudioOnlybyLunchPail = (props) => {
       owner={owner}
       apikey={apiKey}
       profileImage={profileImage}
+      callEnded={callEnded}
     >
       <AudioView
         _height={_height}

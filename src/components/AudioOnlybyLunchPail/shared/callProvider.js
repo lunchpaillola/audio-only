@@ -26,6 +26,7 @@ export const CallProvider = ({
   owner,
   apikey,
   profileImage,
+  callEnded
 }) => {
   const [view, setView] = useState(PREJOIN);
   const [callFrame, setCallFrame] = useState(null);
@@ -62,8 +63,8 @@ export const CallProvider = ({
     .filter((part) => part !== "")
     .pop();
 
-  //action for creating a meeting token
-  const createToken = async () => {
+  //action for creating an owner meeting token
+  const createOwnerToken = async () => {
     try {
       const response = await fetch(endpointurl + "meeting-tokens", {
         method: "POST",
@@ -90,6 +91,32 @@ export const CallProvider = ({
     }
   };
 
+  const createParticipantToken = async () => {
+    try {
+      const response = await fetch(endpointurl + "meeting-tokens", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apikey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          properties: {
+            room_name: room_name,
+          },
+        }),
+      });
+
+      const result = await response.json();
+      const token = result.token;
+
+      return token;
+    } catch (error) {
+      console.error("Error:", error);
+      throw error;
+    }
+  };
+
   const joinRoom = async (isModerator) => {
     try {
       if (callFrame) {
@@ -101,9 +128,10 @@ export const CallProvider = ({
       let newToken;
       if (isModerator || owner) {
         userName = `${participantName?.trim()}_${MOD}`;
-        newToken = await createToken();
+        newToken = await createOwnerToken();
       } else {
         userName = `${participantName?.trim()}_${LISTENER}`;
+        newToken = await createParticipantToken();
       }
 
       let roomInfo = { room_name };
@@ -201,6 +229,7 @@ export const CallProvider = ({
   const endCall = useCallback(() => {
     participants.forEach((p) => removeFromCall(p));
     leaveCall();
+    if (callEnded) callEnded(true)
   }, [participants, removeFromCall, leaveCall]);
 
   const updateUsername = useCallback(

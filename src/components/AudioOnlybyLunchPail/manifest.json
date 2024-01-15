@@ -67,6 +67,18 @@
       "type": "color",
       "default": "#1f2d3d", 
       "helpText": "Background colors for the show more and mute  icons as well as the menu modal"
+    },
+    {
+      "name": "callEnded",
+      "displayName": "Additional actions after a host ends a call.",
+      "type": "action",
+      "arguments": [
+        {
+          "type": "boolean",
+          "name": "callEndedResult",
+          "displayName": "call ended"   
+        }
+      ]
     }
   ]
 }

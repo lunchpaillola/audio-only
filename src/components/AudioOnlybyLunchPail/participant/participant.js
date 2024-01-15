@@ -45,6 +45,7 @@ const Participant = ({
   const profileImage = participant?.userData?.profileImage;
 
   const name = displayName(participant?.user_name);
+  const cleanName= name.replace("✋", "");
   //Translating the role for the user to the
   const role =
     getAccountType(participant?.user_name) === MOD
@@ -110,11 +111,11 @@ const Participant = ({
         if (!participant?.local) {
           const o = [
             {
-              text: `Make ${name}  moderator`,
+              text: `Make ${cleanName}  moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: `Make ${name} listener`,
+              text: `Make ${cleanName} listener`,
               action: () => changeAccountType(participant, LISTENER),
             },
             {
@@ -139,11 +140,11 @@ const Participant = ({
         } else {
           const o = [
             {
-              text: `Make ${name} moderator`,
+              text: `Make ${cleanName} moderator`,
               action: () => changeAccountType(participant, MOD),
             },
             {
-              text: `Make ${name} speaker`,
+              text: `Make ${cleanName} speaker`,
               action: () => changeAccountType(participant, SPEAKER),
             },
             {
