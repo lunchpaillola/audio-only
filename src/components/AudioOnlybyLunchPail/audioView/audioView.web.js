@@ -7,6 +7,7 @@ import {
   PREJOIN,
   useCallState,
   LEAVESCREEN,
+  ERRORSCREEN,
 } from "../shared/callProvider";
 import Participant from "../participant/participant";
 import { LISTENER, MOD, SPEAKER } from "../shared/callProvider";
@@ -15,7 +16,14 @@ import MutedIcon from "../icons/MutedIcon";
 import Audio from "./Audio";
 import { ActivityIndicator } from "react-native";
 
-const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, buttonIconColors }) => {
+const AudioView = ({
+  _height,
+  editor,
+  textColor,
+  backgroundColor,
+  avatarColor,
+  buttonIconColors,
+}) => {
   const {
     getAccountType,
     handleMute,
@@ -28,7 +36,6 @@ const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, b
     participants,
     view,
   } = useCallState();
-
 
   //Join room when theview is PreJOin
   useEffect(() => {
@@ -129,7 +136,7 @@ const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, b
         >
           <ActivityIndicator size="large" color={textColor} />
         </View>
-      ) : view == LEAVESCREEN ? (
+      ) : (view == LEAVESCREEN || view == ERRORSCREEN) ? (
         <View
           style={{
             height: _height,
@@ -147,7 +154,9 @@ const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, b
               textAlign: "center",
             }}
           >
-            👋{"\n"}{"\n"}You've left the call 
+            {view == LEAVESCREEN
+              ? "👋\n\nYou've left the call"
+              : "🚫\n\nThis meeting has ended."}
           </Text>
           <Text
             style={{
@@ -157,7 +166,9 @@ const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, b
               marginBottom: 8,
             }}
           >
-            Have a nice day!
+            {view == LEAVESCREEN
+              ? "Have a nice day!"
+              : ""}
           </Text>
         </View>
       ) : (
@@ -255,11 +266,19 @@ const AudioView = ({ _height, editor, textColor, backgroundColor, avatarColor, b
                     )}
                     {mods?.length < 2 &&
                     getAccountType(local?.user_name) === MOD ? (
-                      <LeaveButton onPress={endCall} title="End Call" textColor={textColor}>
+                      <LeaveButton
+                        onPress={endCall}
+                        title="End Call"
+                        textColor={textColor}
+                      >
                         End call
                       </LeaveButton>
                     ) : (
-                      <LeaveButton onPress={leaveCall}  textColor={textColor} title="Leave">
+                      <LeaveButton
+                        onPress={leaveCall}
+                        textColor={textColor}
+                        title="Leave"
+                      >
                         Leave
                       </LeaveButton>
                     )}
@@ -328,7 +347,7 @@ const LeaveButton = ({ onPress, title, textColor }) => (
     <Text
       style={{
         fontWeight: "bold",
-        color: textColor, 
+        color: textColor,
         fontSize: 16,
       }}
     >

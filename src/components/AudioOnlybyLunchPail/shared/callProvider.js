@@ -14,6 +14,7 @@ export const LISTENER = "LST";
 export const PREJOIN = "pre-join";
 export const INCALL = "in-call";
 export const LEAVESCREEN = "leave-screen";
+export const ERRORSCREEN = "error-screen";
 const MSG_MAKE_MODERATOR = "make-moderator";
 const MSG_MAKE_SPEAKER = "make-speaker";
 const MSG_MAKE_LISTENER = "make-listener";
@@ -170,6 +171,7 @@ export const CallProvider = ({
     } catch (err) {
       if (err) {
         console.error(err);
+        setView(ERRORSCREEN);
         setError(err);
       }
     }

@@ -8,6 +8,7 @@ import {
   SPEAKER,
   PREJOIN,
   LEAVESCREEN,
+  ERRORSCREEN,
   useCallState,
 } from '../shared/callProvider';
 import PropTypes from 'prop-types';
@@ -146,24 +147,27 @@ const AudioView = ({_height, textColor, backgroundColor, avatarColor, buttonIcon
           }}>
           <ActivityIndicator size="large" color={textColor} />
         </View>
-      ) : view == LEAVESCREEN ? (
+      ) : (view == LEAVESCREEN || view == ERRORSCREEN) ? (
         <View
           style={{
             height: _height,
-            justifyContent: 'center',
-            alignItems: 'center',
-            alignContent: 'center',
+            justifyContent: "center",
+            alignItems: "center",
+            alignContent: "center",
             backgroundColor: backgroundColor,
-          }}>
+          }}
+        >
           <Text
             style={{
               color: textColor,
               fontSize: 24,
-              fontWeight: 'bold',
-              textAlign: 'center',
-            }}>
-            👋{'\n'}
-            {'\n'}You've left the call
+              fontWeight: "bold",
+              textAlign: "center",
+            }}
+          >
+            {view == LEAVESCREEN
+              ? "👋\n\nYou've left the call"
+              : "🚫\n\nThis meeting has ended."}
           </Text>
           <Text
             style={{
@@ -171,8 +175,11 @@ const AudioView = ({_height, textColor, backgroundColor, avatarColor, buttonIcon
               fontSize: 16,
               padding: 8,
               marginBottom: 8,
-            }}>
-            Have a nice day!
+            }}
+          >
+            {view == LEAVESCREEN
+              ? "Have a nice day!"
+              : ""}
           </Text>
         </View>
       ) : (
